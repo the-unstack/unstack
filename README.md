@@ -18,7 +18,7 @@
     modular, open-architecture, Industrial-IoT data stack
     <br />
     <br />
-    <a href="https://github.com/the-unstack/unstack/quickstart"><strong>Quickstart</strong></a>
+    <a href="https://github.com/the-unstack/unstack?tab=readme-ov-file#quickstart"><strong>Quickstart</strong></a>
     &middot;
     <a href="https://github.com/the-unstack/unstack-docs"><strong>Explore the docs</strong></a>
     <br />
@@ -54,6 +54,8 @@ This is where the UNStack comes in!
 
 ## Motivation
 Industrial-IoT platforms often cost an arm and a leg, while providing a hard vendor lock-in and ridiculously low amounts of innovation. Small and medium sized businesses should not be locked out of digitalization, due to software costs. 
+
+## Quickstart
 
 ## Roadmap
 - [ ] v1: One-way, reporting-only (edge ➜ data-center)
