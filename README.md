@@ -18,7 +18,7 @@
     modular, open-architecture, Industrial-IoT data stack
     <br />
     <br />
-    <a href="https://github.com/the-unstack/unstack?tab=readme-ov-file#quickstart"><strong>Quickstart</strong></a>
+    <a href="#quickstart"><strong>Quickstart</strong></a>
     &middot;
     <a href="https://github.com/the-unstack/unstack-docs"><strong>Explore the docs</strong></a>
     <br />
