@@ -1,0 +1,13 @@
+#!/bin/bash
+set -e
+
+psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+
+    -- create grafana/grafana user with read-only access
+    CREATE USER ${GRAFANA_DB_USER} WITH PASSWORD '${GRAFANA_DB_PASS}';
+    GRANT CONNECT ON DATABASE unifiednamespace TO ${GRAFANA_DB_USER};
+    GRANT USAGE ON SCHEMA public TO ${GRAFANA_DB_USER};
+    GRANT SELECT ON ALL TABLES IN SCHEMA public TO ${GRAFANA_DB_USER};
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO ${GRAFANA_DB_USER};
+
+EOSQL

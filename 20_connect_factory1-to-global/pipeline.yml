@@ -1,0 +1,22 @@
+input:
+  kafka:
+    addresses:
+      - ${!ENV:KAFKA_BROKER}
+    topics:
+      - 'factory1'
+    consumer_group: 'factory1-to-global'
+
+#output:
+#  stdout: {}
+
+output:
+  kafka:
+    addresses:
+      - ${!ENV:KAFKA_BROKER}
+    topic: 'global'
+    key: ${!metadata("kafka_key")}
+    #metadata:
+    #  include_prefixes:
+    #    - 'mqtt'
+    #    - 'kafka'
+    #    - 'uns'

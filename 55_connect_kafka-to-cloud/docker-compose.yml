@@ -1,0 +1,25 @@
+services:
+  connect:
+    image: redpandadata/connect:latest
+    container_name: connect-kafka-to-cloud
+    restart: always
+    #expose:
+    #  - "4195"
+    ports:
+      - "4196:4195"
+    environment:
+      KAFKA_BROKER_LOCAL: "host.docker.internal:19092"
+      KAFKA_BROKER_UPSTREAM: "10.10.0.1:19092"
+    command: -c /config/pipeline.yml
+    volumes:
+      - ./pipeline.yml:/config/pipeline.yml
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4195/ready"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - kafka
+
+networks:
+  kafka:
+    external: true

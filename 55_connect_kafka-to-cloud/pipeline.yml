@@ -1,0 +1,22 @@
+input:
+  kafka:
+    addresses:
+      - ${!ENV:KAFKA_BROKER_LOCAL}
+    topics:
+      - 'factory1'
+    consumer_group: "uplink"
+
+#output:
+#  stdout: {}
+
+output:
+  kafka:
+    addresses:
+      - ${!ENV:KAFKA_BROKER_UPSTREAM}
+    topic: 'factory1'
+    key: ${!metadata("kafka_key")}
+    #metadata:
+    #  include_prefixes:
+    #    - 'mqtt'
+    #    - 'kafka'
+    #    - 'uns'

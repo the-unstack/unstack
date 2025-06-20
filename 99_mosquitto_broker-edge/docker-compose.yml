@@ -1,0 +1,21 @@
+services:
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    container_name: mosquitto-broker
+    restart: always
+    ports:
+      - 1883:1883
+    healthcheck:
+      test: ["CMD", "mosquitto_sub", "-p", "1882", "-t", "$$SYS/#", "-C", "1", "-i", "healthcheck", "-W", "3"]
+      interval: 30s
+      timeout: 10s
+      start_period: 20s
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - /srv/unstack-data/mosquitto/data:/mosquitto/data
+    networks:
+      - mqtt
+
+networks:
+  mqtt:
+    external: true

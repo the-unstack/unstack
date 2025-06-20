@@ -1,0 +1,19 @@
+services:
+  nodered:
+    container_name: nodered
+    image: nodered/node-red:latest
+    restart: always
+    port:
+      - 1880:1880
+    volumes:
+      - /srv/unstack-data/nodered:/data
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      TZ: "Europe/Berlin"
+      NODE_RED_ENABLE_PROJECTS: true
+    networks:
+      - mqtt
+
+networks:
+  mqtt:
+    external: true

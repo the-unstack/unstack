@@ -1,0 +1,28 @@
+services:
+  connect:
+    image: redpandadata/connect:latest
+    container_name: connect-mqtt-to-kafka
+    restart: always
+    #expose:
+    #  - "4195
+    ports:
+      - "4195:4195"
+    command: -c /config/pipeline.yml
+    environment:
+      MQTT_BROKER_LOCAL: "host.docker.internal:1883"
+      KAFKA_BROKER_LOCAL: "host.docker.internal:19092"
+    volumes:
+      - ./pipeline.yml:/config/pipeline.yml
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4195/ready"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - kafka
+      - mqtt
+
+networks:
+  kafka:
+    external: true
+  mqtt:
+    external: true

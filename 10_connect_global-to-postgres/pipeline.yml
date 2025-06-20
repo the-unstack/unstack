@@ -1,0 +1,137 @@
+logger:
+  # OFF , FATAL , ERROR , WARN , INFO , DEBUG , TRACE , ALL , NONE
+  level: INFO
+  #level: WARN
+
+input:
+  kafka:
+    addresses:
+      - ${!ENV:KAFKA_BROKER}
+    topics:
+      - 'global'
+    consumer_group: "postgres"
+    #auto_replay_nacks: false   # auto replay messages that were not acknowledged (default: true)
+
+cache_resources:
+  - label: redis
+    redis:
+      url: redis://redis:6379
+
+pipeline:
+  processors:
+    - branch:
+        request_map:
+        processors:
+          - cached:
+              key: '${! metadata("kafka_key") }'
+              cache: redis
+              processors:
+                - sql_select:
+                    driver: "postgres"
+                    dsn: "postgres://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?sslmode=disable"
+                    table: topic
+                    columns: [ id ]
+                    where: topic = $1
+                    args_mapping: root = [ metadata("kafka_key") ]
+                - log:
+                    level: DEBUG
+                    message: SELECT topic_id done
+                - switch:
+                  - check: this.0.id == null
+                    processors:
+                      - sql_insert:
+                          driver: "postgres"
+                          dsn: "postgres://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?sslmode=disable"
+                          table: topic
+                          columns: [ topic, created_timestamp ]
+                          suffix: ON CONFLICT (topic) DO NOTHING
+                          args_mapping: |
+                                root = [
+                                  metadata("kafka_key"),
+                                  (metadata("uns_timestamp_ms").number() / 1000 ).ts_format("2006-01-02 15:04:05+00")
+                                ]
+
+                      - log:
+                          level: DEBUG
+                          message: INSERT topic done
+                      - sql_select:
+                          driver: "postgres"
+                          dsn: "postgres://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?sslmode=disable"
+                          table: topic
+                          columns: [ id ]
+                          where: topic = $1
+                          args_mapping: root = [ metadata("kafka_key") ]
+                      - log:
+                          level: DEBUG
+                          message: SELECT topic_id done
+        result_map: meta topic_id = this.0.id
+
+    - log:
+        level: DEBUG
+        message: "after select topic_id"
+        fields_mapping: |
+          root.meta.topic_id = metadata("topic_id")
+
+    - bloblang: |
+        if this.catch("unstructured") == "unstructured" { meta datatype = "text"
+                                                          root = content().string() }
+        else {
+            if this.type() == "number" { meta datatype = "numeric" }
+            if this.type() == "string" { meta datatype = "text" }
+            if this.type() == "object" { meta datatype = "text"
+                                         root = this.string() }
+            if this.type() == "array"  { meta datatype = "text"
+                                         root = this.string() }
+        }
+
+    - log:
+        level: INFO
+        message: "output"
+        fields_mapping: |
+          root.meta.time = (metadata("uns_timestamp_ms").number() / 1000 ).ts_format("2006-01-02 15:04:05.999+00")
+          root.meta.topicid = metadata("topic_id")
+          root.meta.datatype = metadata("datatype")
+          root.meta.content = content().string()
+
+#output:
+#  stdout: {}
+
+output:
+  switch:
+    cases:
+      - check: metadata("datatype") == "numeric"
+        output:
+          sql_insert:
+            driver: "postgres"
+            dsn: "postgres://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?sslmode=disable"
+            batching:
+              count: 1000
+              period: 10s
+            suffix: ON CONFLICT (timestamp, topic_id) DO NOTHING
+            table: process_value_numeric
+            columns: [ timestamp, topic_id, value ]
+            args_mapping: |
+                root = [
+                  (metadata("uns_timestamp_ms").number() / 1000 ).ts_format("2006-01-02 15:04:05.999+00"),
+                  metadata("topic_id"),
+                  content()
+                ]
+
+      - check: metadata("datatype") == "text"
+        output:
+          sql_insert:
+            driver: "postgres"
+            dsn: "postgres://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?sslmode=disable"
+            batching:
+              count: 1000
+              period: 10s
+            suffix: ON CONFLICT (timestamp, topic_id) DO NOTHING
+            table: process_value_text
+            columns: [ timestamp, topic_id, value ]
+            args_mapping: |
+                root = [
+                  (metadata("uns_timestamp_ms").number() / 1000 ).ts_format("2006-01-02 15:04:05.999+00"),
+                  metadata("topic_id"),
+                  content().string()
+                ]
+
