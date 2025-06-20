@@ -18,9 +18,10 @@
     modular, open-architecture, Industrial-IoT data stack
     <br />
     <br />
-    <a href="https://github.com/the-unstack/unstack-docs"><strong>Explore the docs:</strong></a>
-    <a href="https://github.com/the-unstack/unstack-docs/gettings-started"><strong>Getting started</strong></a>
-        <br />
+    <a href="https://github.com/the-unstack/unstack/quickstart"><strong>Quickstart</strong></a>
+    &middot;
+    <a href="https://github.com/the-unstack/unstack-docs"><strong>Explore the docs</strong></a>
+    <br />
     <a href="https://github.com/the-unstack/unstack/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
     &middot;
     <a href="https://github.com/the-unstack/unstack/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
@@ -48,6 +49,7 @@ This is where the UNStack comes in!
 - Keep-It-Simple
 - Containers Only, Linux Only
 - Open Architecture / Open Standards Only
+- S..t happens - design for troubleshooting
 - Don’t reinvent the wheel – integrate best-in-class tools instead of forking or building them
 
 ## Motivation
