@@ -58,8 +58,8 @@ Industrial-IoT platforms often cost an arm and a leg, while providing a hard ven
 ## Quickstart
 
 ## Roadmap
-- [ ] v1: One-way, reporting-only (edge ➜ data-center)
-- [ ] v2: Two-way, full unified-namespace (edge ⇄ data-center)
+- [ ] v1: One-way, reporting-only (edge ➜ global)
+- [ ] v2: Two-way, full unified-namespace (edge ⇄ global)
 
 ## License
 Distributed under the Apache-2.0 license. See `LICENSE` for more information.
