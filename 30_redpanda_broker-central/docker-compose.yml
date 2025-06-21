@@ -27,7 +27,7 @@ services:
     volumes:
       - /srv/unstack-data/redpanda-broker:/var/lib/redpanda/data
     networks:
-      - kafka
+      - kafka-global
     healthcheck:
       test: ["CMD-SHELL", "rpk cluster health | grep -E 'Healthy:.+true' || exit 1"]
       interval: 30s
@@ -51,11 +51,11 @@ services:
     environment:
       CONFIG_FILEPATH: /tmp/config.yml
     networks:
-      - kafka
+      - kafka-global
       #- reverseproxy   # only enable when running with a separate reverse proxy
 
 networks:
-  kafka:
+  kafka-global:
     external: true
   #reverseproxy:
   #  external: true

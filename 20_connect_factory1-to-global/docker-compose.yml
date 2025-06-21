@@ -15,8 +15,8 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
-      - kafka
+      - kafka-global
 
 networks:
-  kafka:
+  kafka-global:
     external: true

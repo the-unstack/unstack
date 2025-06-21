@@ -31,7 +31,7 @@ services:
       - "host.docker.internal:host-gateway"
     networks:
       - postgres
-      - kafka
+      - kafka-global
       - global-to-postgres
 
   redis:
@@ -54,7 +54,7 @@ services:
 networks:
   global-to-postgres:
     driver: bridge
-  kafka:
+  kafka-global:
     external: true
   postgres:
     external: true

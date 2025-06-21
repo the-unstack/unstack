@@ -13,14 +13,14 @@ services:
       NODE_RED_ENABLE_PROJECTS: true
     networks:
       - postgres
-      - kafka
+      - kafka-global
       #- reverseproxy    # only enable when running with separate reverse proxy
       #- mqtt            # only enable when running the reduced, combined-instance-mode
 
 networks:
   postgres:
     external: true
-  kafka:
+  kafka-global:
     external: true
   #mqtt:
   #  external: true
