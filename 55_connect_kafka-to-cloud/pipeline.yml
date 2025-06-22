@@ -1,7 +1,7 @@
 input:
   kafka:
     addresses:
-      - ${!ENV:KAFKA_BROKER_LOCAL}
+      - ${KAFKA_BROKER_LOCAL}
     topics:
       - 'factory1'
     consumer_group: "uplink"
@@ -12,7 +12,7 @@ input:
 output:
   kafka:
     addresses:
-      - ${!ENV:KAFKA_BROKER_UPSTREAM}
+      - ${KAFKA_BROKER_UPSTREAM}
     topic: 'factory1'
     key: ${!metadata("kafka_key")}
     #metadata:

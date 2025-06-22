@@ -1,12 +1,12 @@
 services:
   nodered:
-    container_name: nodered
+    container_name: nodered-edge
     image: nodered/node-red:latest
     restart: always
-    port:
+    ports:
       - 1880:1880
     volumes:
-      - /srv/unstack-data/nodered:/data
+      - /srv/unstack-data/nodered-edge:/data
       - /etc/localtime:/etc/localtime:ro
     environment:
       TZ: "Europe/Berlin"

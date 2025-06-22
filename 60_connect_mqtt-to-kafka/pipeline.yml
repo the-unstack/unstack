@@ -1,8 +1,7 @@
 input:
   mqtt:
     urls:
-      - tcp://${!ENV:MQTT_BROKER_LOCAL}
-      - tcp://host.docker.internal:1883
+      - tcp://${MQTT_BROKER_LOCAL}
     client_id: "redpanda-connect-mqtt-to-kafka"
     connect_timeout: 30s
     topics:
@@ -17,7 +16,7 @@ pipeline:
 output:
   kafka:
     addresses:
-      - ${!ENV:KAFKA_BROKER_LOCAL}
+      - ${KAFKA_BROKER_LOCAL}
     topic: factory1
     key: ${!metadata("mqtt_topic")}
     #metadata:

@@ -1,7 +1,7 @@
 services:
   redpanda:
     image: redpandadata/redpanda:latest
-    container_name: redpanda-broker
+    container_name: redpanda-broker-edge
     restart: always
     ports:
       - 18081:18081
@@ -25,7 +25,7 @@ services:
       - --mode dev-container
       - --default-log-level=info
     volumes:
-      - /srv/unstack-data/redpanda-broker:/var/lib/redpanda/data
+      - /srv/unstack-data/redpanda-broker-edge:/var/lib/redpanda/data
     networks:
       - kafka-edge
     healthcheck:
@@ -37,7 +37,7 @@ services:
 
   console:
     image: redpandadata/console:latest
-    container_name: redpanda-console
+    container_name: redpanda-console-edge
     restart: always
     ports:
       - 8080:8080
