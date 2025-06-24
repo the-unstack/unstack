@@ -6,7 +6,7 @@ logger:
 input:
   kafka:
     addresses:
-      - ${!ENV:KAFKA_BROKER}
+      - ${KAFKA_BROKER}
     topics:
       - 'global'
     consumer_group: "postgres"

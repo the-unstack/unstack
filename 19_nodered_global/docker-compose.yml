@@ -1,12 +1,12 @@
 services:
-  nodered:
-    container_name: nodered
+  nodered-global:
+    container_name: nodered-global
     image: nodered/node-red:latest
     restart: always
-    ports:               # disable ports section, when running in edge+cloud mode, with separate reverse proxy
+    ports:               # disable ports section when running with separate reverse proxy
      - 1881:1880         #
     volumes:
-      - /srv/unstack-data/nodered:/data
+      - /srv/unstack-data/nodered-global:/data
       - /etc/localtime:/etc/localtime:ro
     environment:
       TZ: "Europe/Berlin"
@@ -14,15 +14,9 @@ services:
     networks:
       - postgres
       - kafka-global
-      #- reverseproxy    # only enable when running with separate reverse proxy
-      #- mqtt            # only enable when running the reduced, combined-instance-mode
 
 networks:
   postgres:
     external: true
   kafka-global:
     external: true
-  #mqtt:
-  #  external: true
-  #reverseproxy:
-  #  external: true

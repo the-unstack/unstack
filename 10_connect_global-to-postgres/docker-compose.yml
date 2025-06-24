@@ -7,14 +7,14 @@ services:
       - "4195"
     command: -c /config/pipeline.yml
     env_file:
-      - ../!credentials/credentials.env
+      - .env
     environment:
-      DB_USER: ${POSTGRES_USER}
-      DB_PASS: ${POSTGRES_PASSWORD}
       DB_HOST: timescaledb
       DB_PORT: 5432
-      DB_DATABASE: unifiednamespace
-      KAFKA_BROKER: redpanda:19092
+      DB_USER: ${POSTGRES_USER}
+      DB_PASS: ${POSTGRES_PASSWORD}
+      DB_DATABASE: ${POSTGRES_DB}
+      KAFKA_BROKER: redpanda-global:29092
     volumes:
       - ./pipeline.yml:/config/pipeline.yml
       - ./healthcheck/healthcheck.sh:/healthcheck.sh

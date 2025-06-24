@@ -3,12 +3,10 @@ services:
     image: redpandadata/connect:latest
     container_name: connect-kafka-to-cloud
     restart: always
-    #expose:
-    #  - "4195"
-    #ports:
-    #  - "4196:4195"
+    expose:
+      - "4195"
     environment:
-      KAFKA_BROKER_LOCAL: "redpanda-edge:19092"
+      KAFKA_BROKER_LOCAL: "redpanda-edge:9092"
       KAFKA_BROKER_UPSTREAM: "host.docker.internal:29092"  # change this, when running global stack on a separate host
     command: -c /config/pipeline.yml
     volumes:

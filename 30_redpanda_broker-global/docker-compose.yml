@@ -4,10 +4,10 @@ services:
     container_name: redpanda-broker-global
     restart: always
     ports:
-      - 28081:28081   # 10.10.0.1:18081:18081 when using wireguard to communicate with the edge devices
-      - 28082:28082   # 10.10.0.1:18082:18082
-      - 29092:29092   # 10.10.0.1:19092:19092
-      - 29644:9644    # 10.10.0.1:19644:9644
+      - 127.0.0.1:28081:28081
+      - 127.0.0.1:28082:28082
+      - 29092:29092             # 10.10.0.1:29092:29092 when using wireguard to communicate with the edge devices
+      - 127.0.0.1:29644:9644    # the kafka-addr needs to be accessible by the edge-devices
     command:
       - redpanda
       - start
@@ -15,7 +15,7 @@ services:
       - --advertise-kafka-addr internal://redpanda-global:9092,external://host.docker.internal:29092
       - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:28082
       # Address the broker advertises to clients that connect to the HTTP Proxy.
-      - --advertise-pandaproxy-addr internal://redpanda:8082,external://localhost:28082
+      - --advertise-pandaproxy-addr internal://redpanda-global:8082,external://localhost:28082
       - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:28081
       # Redpanda brokers use the RPC API to communicate with each other internally.
       - --rpc-addr redpanda-global:33145

@@ -1,7 +1,7 @@
 input:
   kafka:
     addresses:
-      - ${!ENV:KAFKA_BROKER}
+      - ${KAFKA_BROKER}
     topics:
       - 'factory1'
     consumer_group: 'factory1-to-global'
@@ -12,7 +12,7 @@ input:
 output:
   kafka:
     addresses:
-      - ${!ENV:KAFKA_BROKER}
+      - ${KAFKA_BROKER}
     topic: 'global'
     key: ${!metadata("kafka_key")}
     #metadata:

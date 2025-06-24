@@ -5,18 +5,14 @@ services:
     restart: always
     expose:
       - "4195"
-    #ports:
-    #  - "4195:4195"
     command: -c /config/pipeline.yml
     environment:
       MQTT_BROKER_LOCAL: "mosquitto:1883"
-      KAFKA_BROKER_LOCAL: "redpanda-edge:19092"
+      KAFKA_BROKER_LOCAL: "redpanda-edge:9092"
     volumes:
       - ./pipeline.yml:/config/pipeline.yml
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:4195/ready"]
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     networks:
       - kafka-edge
       - mqtt

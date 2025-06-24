@@ -18,3 +18,9 @@ docker network create kafka-global
 sudo mkdir -p /srv/unstack-data/redpanda-broker-global
 sudo chown 101:101 /srv/unstack-data/redpanda-broker-global
 
+# Node-RED Global
+sudo mkdir -p /srv/unstack-data/nodered-global
+sudo chown 1000:1000 /srv/unstack-data/nodered-global
+
+# Postgres
+docker network create postgres

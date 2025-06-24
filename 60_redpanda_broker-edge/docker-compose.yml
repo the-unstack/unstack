@@ -4,15 +4,15 @@ services:
     container_name: redpanda-broker-edge
     restart: always
     ports:
-      - 18081:18081
-      - 18082:18082
-      - 19092:19092
-      - 19644:9644
+      - 127.0.0.1:18081:18081
+      - 127.0.0.1:18082:18082
+      - 127.0.0.1:19092:19092
+      - 127.0.0.1:19644:9644
     command:
       - redpanda
       - start
       - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
-      - --advertise-kafka-addr internal://redpanda-edge:9092,external://host.docker.internal:19092
+      - --advertise-kafka-addr internal://redpanda-edge:9092,external://localhost:19092
       - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:18082
       # Address the broker advertises to clients that connect to the HTTP Proxy.
       - --advertise-pandaproxy-addr internal://redpanda-edge:8082,external://localhost:18082
@@ -26,8 +26,6 @@ services:
       - --default-log-level=info
     volumes:
       - /srv/unstack-data/redpanda-broker-edge:/var/lib/redpanda/data
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     networks:
       - kafka-edge
     healthcheck:

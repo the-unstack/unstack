@@ -7,7 +7,7 @@ services:
       - "4195"
     command: -c /config/pipeline.yml
     environment:
-      KAFKA_BROKER: "redpanda:19092"
+      KAFKA_BROKER: "host.docker.internal:29092"
     volumes:
       - ./pipeline.yml:/config/pipeline.yml
     healthcheck:
