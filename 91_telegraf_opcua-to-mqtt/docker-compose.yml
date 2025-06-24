@@ -1,0 +1,15 @@
+services:
+  telegraf:
+    image: telegraf:latest
+    container_name: telegraf-opcua-to-mqtt
+    restart: always
+    volumes:
+      - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep telegraf > /dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

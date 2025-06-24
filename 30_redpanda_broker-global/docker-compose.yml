@@ -1,0 +1,65 @@
+services:
+  redpanda-global:
+    image: redpandadata/redpanda:latest
+    container_name: redpanda-broker-global
+    restart: always
+    ports:
+      - 28081:28081   # 10.10.0.1:18081:18081 when using wireguard to communicate with the edge devices
+      - 28082:28082   # 10.10.0.1:18082:18082
+      - 29092:29092   # 10.10.0.1:19092:19092
+      - 29644:9644    # 10.10.0.1:19644:9644
+    command:
+      - redpanda
+      - start
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:29092
+      - --advertise-kafka-addr internal://redpanda-global:9092,external://host.docker.internal:29092
+      - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:28082
+      # Address the broker advertises to clients that connect to the HTTP Proxy.
+      - --advertise-pandaproxy-addr internal://redpanda:8082,external://localhost:28082
+      - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:28081
+      # Redpanda brokers use the RPC API to communicate with each other internally.
+      - --rpc-addr redpanda-global:33145
+      - --advertise-rpc-addr redpanda-global:33145
+      - --smp 1
+      - --memory 1G
+      - --mode dev-container
+      - --default-log-level=info
+    volumes:
+      - /srv/unstack-data/redpanda-broker-global:/var/lib/redpanda/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - kafka-global
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health | grep -E 'Healthy:.+true' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  console-global:
+    image: redpandadata/console:latest
+    container_name: redpanda-console-global
+    restart: always
+    #expose:         # enable when running with a separate reverse proxy
+    #  - 8080
+    ports:           # enable for testing
+      - 8090:8080
+    depends_on:
+      redpanda-global:
+        condition: service_healthy
+    entrypoint: /bin/sh
+    command: -c '/app/console'
+    volumes:
+      - ./redpanda-console.yml:/tmp/config.yml
+    environment:
+      CONFIG_FILEPATH: /tmp/config.yml
+    networks:
+      - kafka-global
+      #- reverseproxy   # only enable when running with a separate reverse proxy
+
+networks:
+  kafka-global:
+    external: true
+  #reverseproxy:
+  #  external: true

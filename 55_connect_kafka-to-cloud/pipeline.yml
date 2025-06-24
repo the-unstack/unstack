@@ -13,7 +13,7 @@ output:
   kafka:
     addresses:
       - ${KAFKA_BROKER_UPSTREAM}
-    topic: 'factory1'
+    topic: 'global'
     key: ${!metadata("kafka_key")}
     #metadata:
     #  include_prefixes:

@@ -1,0 +1,1 @@
+docker exec -it telegraf-opcua-to-mqtt sh

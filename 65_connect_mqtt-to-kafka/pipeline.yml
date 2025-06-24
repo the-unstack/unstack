@@ -13,14 +13,18 @@ pipeline:
         meta uns_timestamp_ms = timestamp_unix_milli()
         meta uns_origin = "factory1"
 
+#output:
+#  stdout: {}
+
 output:
   kafka:
     addresses:
       - ${KAFKA_BROKER_LOCAL}
     topic: factory1
     key: ${!metadata("mqtt_topic")}
+
     #metadata:
-    #  include_prefixes:.
+    #  include_prefixes:
     #    - 'mqtt'
     #    - 'kafka'
     #    - 'uns'

@@ -3,14 +3,14 @@ services:
     image: redpandadata/connect:latest
     container_name: connect-mqtt-to-kafka
     restart: always
-    #expose:
-    #  - "4195
-    ports:
-      - "4195:4195"
+    expose:
+      - "4195"
+    #ports:
+    #  - "4195:4195"
     command: -c /config/pipeline.yml
     environment:
-      MQTT_BROKER_LOCAL: "host.docker.internal:1883"
-      KAFKA_BROKER_LOCAL: "host.docker.internal:19092"
+      MQTT_BROKER_LOCAL: "mosquitto:1883"
+      KAFKA_BROKER_LOCAL: "redpanda-edge:19092"
     volumes:
       - ./pipeline.yml:/config/pipeline.yml
     healthcheck:

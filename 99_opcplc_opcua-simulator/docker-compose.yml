@@ -1,0 +1,18 @@
+services:
+  opcua:
+    container_name: opcplc-opcua-simulator
+    image: mcr.microsoft.com/iotedge/opc-plc:latest
+    restart: always
+    ports:
+      - 4840:4840
+    command:
+      - --pn=4840
+      - --autoaccept    # all certs are trusted
+      - --sn=5          # slow nodes - number
+      - --sr=10         # slow nodes - rate in seconds
+      - --st=Double     # slow nodes - data type
+      - --str=true      # slow nodes - randomization
+      - --stl=-20.0     # slow nodes - lower bound
+      - --stu=99.0      # slow nodes - upper bound
+      - --sts=0.01      # slow nodes - step size
+      - --gn=0

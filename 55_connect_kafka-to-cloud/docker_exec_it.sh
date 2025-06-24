@@ -1,0 +1,1 @@
+docker exec -it connect-kafka-to-cloud sh
