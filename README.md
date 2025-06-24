@@ -56,6 +56,13 @@ This is where the UNStack comes in!
 Industrial-IoT platforms often cost an arm and a leg, while providing a hard vendor lock-in and ridiculously low amounts of innovation. Small and medium sized businesses should not be locked out of digitalization, due to software costs. 
 
 ## Quickstart
+```
+cd /srv
+git clone https://github.com/the-unstack/unstack.git
+cd unstack
+'./!scripts/initialize.sh'
+./docker_all_restart.sh
+```
 
 ## Roadmap
 - [ ] v1: One-way, reporting-only (edge ➜ global)
