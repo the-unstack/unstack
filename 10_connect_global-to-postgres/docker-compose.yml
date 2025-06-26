@@ -18,7 +18,6 @@ services:
     volumes:
       - ./pipeline.yml:/config/pipeline.yml
       - ./healthcheck/healthcheck.sh:/healthcheck.sh
-      - /srv/unstack-data/kafka-to-postgres/healthcheck:/healthcheck
     depends_on:
       redis:
         condition: service_healthy

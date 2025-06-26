@@ -1,8 +1,8 @@
 #!/bin/sh
 
 # Define paths for your stat files
-PREV="/healthcheck/prev_stats.txt"
-CURR="/healthcheck/curr_stats.txt"
+PREV="/tmp/healthcheck_prev_stats.txt"
+CURR="/tmp/healthcheck_curr_stats.txt"
 
 # Fetch lines and store current state
 wget -qO- http://localhost:4195/stats | grep -e output_sent{ -e output_error{ > "$CURR"
