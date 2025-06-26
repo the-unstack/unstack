@@ -1,6 +1,10 @@
 #!/bin/bash
 
 ## ***** global *****
+# Grafana
+sudo mkdir -p /srv/unstack-data/grafana
+sudo chown 1000:1000 /srv/unstack-data/grafana
+
 # Postgres
 docker network create postgres
 
