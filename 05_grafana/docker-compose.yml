@@ -15,6 +15,8 @@ services:
     volumes:
       - ./grafana.ini:/etc/grafana/grafana.ini
       - ./config/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+      - ./config/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml
+      - ./dashboards:/var/lib/grafana/dashboards
       - /srv/unstack-data/grafana:/var/lib/grafana
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
