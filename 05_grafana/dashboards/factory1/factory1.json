@@ -281,12 +281,13 @@
     }
   ],
   "schemaVersion": 41,
+  "refresh": "30s",
   "tags": [],
   "templating": {
     "list": []
   },
   "time": {
-    "from": "now-3h",
+    "from": "now-15m",
     "to": "now"
   },
   "timepicker": {},

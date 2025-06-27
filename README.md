@@ -15,7 +15,7 @@
   <h3 align="center">the UNStack</h3>
 
   <p align="center">
-    modular, open-architecture, Industrial-IoT data stack
+    modular, open-architecture, unified-namespaces focused, Industrial-IoT data stack
     <br />
     <br />
     <a href="#quickstart"><strong>Quickstart</strong></a>
@@ -29,7 +29,7 @@
 </div>
 
 ## About The Project
-The UNStack is a modular, open-architecture, Industrial-IoT data stack.<br>
+The UNStack is a modular, open-architecture, unified-namespace focused, Industrial-IoT data stack.<br>
 It delivers your data from your edge devices to your central dashboards and beyond.<br>
 Even in small commercial applications, you quickly reach the limitations of the [MING][ming-url] stack.<br>
 This is where the UNStack comes in!
@@ -43,7 +43,7 @@ This is where the UNStack comes in!
 - Mosquitto (MQTT-Broker) ([Github][mosquitto-url-github], [Docker Hub][mosquitto-url-dockerhub])
 - Adminer (Database management) ([Github][adminer-url-github], [Docker Hub][adminer-url-dockerhub])
 - Telegraf (ETL-Tool) ([Github][telegraf-url-github], [Docker Hub][telegraf-url-dockerhub])
-- OPCUA-Simulator ([Github][opcsim-url-github], [Docker Hub][opcsim-url-dockerhub])
+- OPCUA-Simulator ([Github][opcplc-url-github], [Docker Hub][opcplc-url-dockerhub])
 
 ## Core guidelines
 - Keep-It-Simple
@@ -107,7 +107,7 @@ Project link: [https://github.com/the-unstack/unstack](https://github.com/the-un
 [mosquitto-url-dockerhub]: https://hub.docker.com/_/eclipse-mosquitto
 [telegraf-url-github]: https://github.com/influxdata/telegraf
 [telegraf-url-dockerhub]: https://hub.docker.com/_/telegraf
-[opcsim-url-github]: https://github.com/amine-amaach/simulators
-[opcsim-url-dockerhub]: https://hub.docker.com/r/amineamaach/sensors-opcua
+[opcplc-url-github]: https://github.com/Azure-Samples/iot-edge-opc-plc
+[opcplc-url-dockerhub]: https://hub.docker.com/r/microsoft/iotedge-opc-plc
 
 [linkedin-url]: https://linkedin.com/in/marcluer
