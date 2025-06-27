@@ -61,6 +61,10 @@ Industrial-IoT platforms often cost an arm and a leg, while providing a hard ven
 cd /srv
 git clone https://github.com/the-unstack/unstack.git
 cd unstack
+
+cp './!credentials/credentials.env.example' './!credentials/credentials.env'
+# Edit /!credentials/credentials.env to set your own passwords
+
 './!scripts/initialize.sh'
 ./docker_all_restart.sh
 ```
