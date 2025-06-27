@@ -15,7 +15,7 @@
   <h3 align="center">the UNStack</h3>
 
   <p align="center">
-    modular, open-architecture, unified-namespaces focused, Industrial-IoT data stack
+    modular, open-architecture, Unified Namespace focused, Industrial-IoT data stack
     <br />
     <br />
     <a href="#quickstart"><strong>Quickstart</strong></a>
@@ -29,7 +29,7 @@
 </div>
 
 ## About The Project
-The UNStack is a modular, open-architecture, unified-namespace focused, Industrial-IoT data stack.<br>
+The UNStack is a modular, open-architecture, Unified Namespace focused, Industrial-IoT data stack.<br>
 It delivers your data from your edge devices to your central dashboards and beyond.<br>
 Even in small commercial applications, you quickly reach the limitations of the [MING][ming-url] stack.<br>
 This is where the UNStack comes in!
@@ -56,6 +56,7 @@ This is where the UNStack comes in!
 Industrial-IoT platforms often cost an arm and a leg, while providing a hard vendor lock-in and ridiculously low amounts of innovation. Small and medium sized businesses should not be locked out of digitalization, due to software costs. 
 
 ## Quickstart
+- Install:
 ```
 cd /srv
 git clone https://github.com/the-unstack/unstack.git
@@ -63,6 +64,7 @@ cd unstack
 './!scripts/initialize.sh'
 ./docker_all_restart.sh
 ```
+- Access Grafana: http://hostip:3000
 
 ## Roadmap
 - [ ] v1: One-way, reporting-only (edge ➜ global)
