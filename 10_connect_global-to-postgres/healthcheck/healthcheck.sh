@@ -1,8 +1,12 @@
 #!/bin/sh
 
+# Constants
+FAIL_THRESHOLD=5
+
 # Define paths for your stat files
 PREV="/tmp/healthcheck_prev_stats.txt"
 CURR="/tmp/healthcheck_curr_stats.txt"
+FAILCOUNT="/tmp/healthcheck_failcount.txt"
 
 # Fetch lines and store current state
 wget -qO- http://localhost:4195/stats | grep -e output_sent{ -e output_error{ > "$CURR"
@@ -10,6 +14,7 @@ wget -qO- http://localhost:4195/stats | grep -e output_sent{ -e output_error{ > 
 # If previous stats file does not exist, just copy and exit
 if [ ! -f "$PREV" ]; then
     cp "$CURR" "$PREV"
+    echo 0 > "$FAILCOUNT"
     exit 0
 fi
 
@@ -36,12 +41,25 @@ echo INC_Out1_SENT:$INC_Out1_SENT
 # Update previous for next run
 cp "$CURR" "$PREV"
 
+if [ ! -f "$FAILCOUNT" ]; then
+    echo 0 > "$FAILCOUNT"
+fi
+
+FAILURES=$(cat "$FAILCOUNT")
+
 # check
 if [ "$INC_Out0_ERROR" -gt "$INC_Out0_SENT" ] || [ "$INC_Out1_ERROR" -gt "$INC_Out1_SENT" ]; then
+    FAILURES=$((FAILURES + 1))
+    echo "$FAILURES" > "$FAILCOUNT"
+    if [ "$FAILURES" -ge "$FAIL_THRESHOLD" ]; then
+        echo "Failure threshold reached, stopping service!"
+        kill 1
+    fi
     echo "More errors than sucessfully sent messages"
     echo "STATUS: ERROR"
     exit 1
 else
+    echo 0 > "$FAILCOUNT"
     echo "STATUS: OK"
     exit 0
 fi
