@@ -1,0 +1,7 @@
+#
+# Regular cron jobs for UNStack
+#
+# Every night
+#
+# m	h	dom	mon	dow	user	command
+30	1	*	*	*	root    /bin/bash /srv/unstack/docker_all_pull+restart.sh

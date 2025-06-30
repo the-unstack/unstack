@@ -1,0 +1,1 @@
+/srv/unstack/!scripts/docker_all_pull+restart.sh
