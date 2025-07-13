@@ -7,7 +7,7 @@ services:
       - 127.0.0.1:28081:28081
       - 127.0.0.1:28082:28082
       - 29092:29092             # 10.10.0.1:29092:29092 when using wireguard to communicate with the edge devices
-      - 127.0.0.1:29644:9644    # the kafka-addr needs to be accessible by the edge-devices
+      - 127.0.0.1:29644:9644                          # the kafka-addr needs to be accessible by the edge-devices
     command:
       - redpanda
       - start

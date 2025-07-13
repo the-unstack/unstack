@@ -50,6 +50,20 @@ services:
     networks:
       - global-to-postgres
 
+  monitor:
+    image: docker:cli
+    container_name: connect-global-to-postgres-monitor
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./monitor/monitor.sh:/monitor.sh
+    command: sh /monitor.sh
+    depends_on:
+      - connect
+      - redis
+    networks:
+      - global-to-postgres
+
 networks:
   global-to-postgres:
     driver: bridge
