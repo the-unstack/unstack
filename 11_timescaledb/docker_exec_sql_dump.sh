@@ -7,4 +7,4 @@ fi
 
 source ../!credentials/credentials.env
 
-docker exec -it timescaledb psql -d "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost/unifiednamespace" -c "SELECT version();"
+docker exec -it timescaledb pg_dump -d "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost/unifiednamespace" -Fc > unifiednamespace.dump
