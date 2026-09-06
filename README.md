@@ -22,9 +22,9 @@
     &middot;
     <a href="https://github.com/the-unstack/unstack-docs"><strong>Explore the docs</strong></a>
     <br />
-    <a href="https://github.com/the-unstack/unstack/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
+    <a href="https://github.com/the-unstack/unstack/issues/new?labels=bug">Report Bug</a>
     &middot;
-    <a href="https://github.com/the-unstack/unstack/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
+    <a href="https://github.com/the-unstack/unstack/issues/new?labels=enhancement">Request Feature</a>
   </p>
 </div>
 
@@ -68,6 +68,7 @@ The numbering follows the automation pyramid: sort the folders and you get the h
 - Mosquitto (MQTT-Broker) ([Github][mosquitto-url-github], [Docker Hub][mosquitto-url-dockerhub])
 - Adminer (Database management) ([Github][adminer-url-github], [Docker Hub][adminer-url-dockerhub])
 - Telegraf (ETL-Tool) ([Github][telegraf-url-github], [Docker Hub][telegraf-url-dockerhub])
+- Redis (topic-id cache for Connect) ([Github][redis-url-github], [Docker Hub][redis-url-dockerhub])
 - OPCUA-Simulator ([Github][opcplc-url-github], [Docker Hub][opcplc-url-dockerhub])
 
 ## Core guidelines
@@ -81,6 +82,9 @@ The numbering follows the automation pyramid: sort the folders and you get the h
 Industrial-IoT platforms often cost an arm and a leg, while providing a hard vendor lock-in and ridiculously low amounts of innovation. Small and medium sized businesses should not be locked out of digitalization, due to software costs. 
 
 ## Quickstart
+> **Insecure by default.** Lab/dev stack, no authentication on most services. Read [INSECURITY.md](INSECURITY.md) before exposing it to any network.
+
+- Prerequisites: Linux, Docker Engine + Compose v2 (or rootless Podman with the `docker` alias)
 - Install:
 ```
 cd /srv
@@ -114,7 +118,7 @@ Project link: [https://github.com/the-unstack/unstack](https://github.com/the-un
 [issues-shield]: https://img.shields.io/github/issues/the-unstack/unstack.svg?style=for-the-badge
 [issues-url]: https://github.com/the-unstack/unstack/issues
 [license-shield]: https://img.shields.io/github/license/the-unstack/unstack.svg?style=for-the-badge
-[license-url]: https://github.com/the-unstack/unstack/blob/master/LICENSE
+[license-url]: https://github.com/the-unstack/unstack/blob/main/LICENSE
 
 [ming-url]: https://flowfuse.com/blog/2023/02/ming-blog/
 
@@ -135,6 +139,8 @@ Project link: [https://github.com/the-unstack/unstack](https://github.com/the-un
 [mosquitto-url-dockerhub]: https://hub.docker.com/_/eclipse-mosquitto
 [telegraf-url-github]: https://github.com/influxdata/telegraf
 [telegraf-url-dockerhub]: https://hub.docker.com/_/telegraf
+[redis-url-github]: https://github.com/redis/redis
+[redis-url-dockerhub]: https://hub.docker.com/_/redis
 [opcplc-url-github]: https://github.com/Azure-Samples/iot-edge-opc-plc
 [opcplc-url-dockerhub]: https://hub.docker.com/r/microsoft/iotedge-opc-plc
 

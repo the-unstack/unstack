@@ -1,6 +1,6 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to AI coding agents (Claude Code, Codex, etc.) when working with code in this repository.
 
 ## Repository Overview
 
@@ -17,11 +17,11 @@ the order resembles the hierarchy.
 - **10_connect_global-to-postgres**: Redpanda Connect ETL from Kafka to TimescaleDB
 - **11_timescaledb**: PostgreSQL with TimescaleDB extension for time-series data
 - **19_nodered_global**: Node-RED for global logic processing
-- **20_connect_factory1-to-global**: Connects Kafka edge topic to Kafka global topic
+- **20_connect_factory1-to-global**: Redpanda Connect, renames topic `factory1` → `global` inside the global broker (edge→global hop is `55_`)
 - **30_redpanda_broker-global**: Kafka broker for global message streaming
 
 ### Edge Components
-- **55_connect_kafka-to-cloud**: Connects edge Kafka to cloud Kafka
+- **55_connect_kafka-to-cloud**: Redpanda Connect, forwards edge topic `factory1` to the global broker
 - **60_redpanda_broker-edge**: Kafka broker for edge message streaming
 - **65_connect_mqtt-to-kafka**: Redpanda Connect ETL from MQTT to Kafka
 - **80_nodered_edge**: Node-RED for edge logic processing
@@ -39,13 +39,12 @@ cp .env.example .env
 ```
 
 ### Managing All Services
+Root `container_*.sh` are symlinks into `!scripts/`. They act on every `NN_*` dir that has a `.autostart` file.
 ```bash
-./container_all_restart.sh          # Start all services with .autostart files
+./container_all_restart.sh          # initialize.sh, then compose down && up -d for all autostart services
 ./container_all_down.sh             # Stop all services
-./container_all_pull.sh             # Pull latest images for all services
-./container_ps.sh                   # View running containers
-./container_stats.sh                # Monitor memory usage
 ```
+Full script inventory, destructive flags and cron setup: `!scripts/README.md`.
 
 ### Managing Individual Services
 Each numbered directory contains standard scripts:
@@ -60,8 +59,9 @@ cd XX_service_name/
 ### Database Operations
 ```bash
 cd 11_timescaledb/
+./container_exec_run.sh                           # Bash shell inside the container
 ./container_exec_sql.sh                           # Execute SQL interactively
-./container_exec_sql_dump.sh                      # Dump database
+./container_exec_sql_dump.sh                      # Dump database (pg_dump -Fc, timestamped file)
 ./container_exec_sql_get-postgres-version.sh      # Check PostgreSQL version
 ./container_exec_sql_get-timescale-version.sh     # Check TimescaleDB version
 ./container_exec_sql_upgrade-timescale.sh         # Upgrade TimescaleDB
@@ -79,8 +79,10 @@ cd 11_timescaledb/
 
 ### Data Processing
 - `pipeline.yml` files in Connect services define ETL transformations
-- `10_connect_global-to-postgres/pipeline.yml`: Kafka to TimescaleDB with data type handling
-- `65_connect_mqtt-to-kafka/pipeline.yml`: MQTT to Kafka bridging
+- `65_connect_mqtt-to-kafka/pipeline.yml`: MQTT `#` → edge Kafka topic `factory1` (key = MQTT topic)
+- `55_connect_kafka-to-cloud/pipeline.yml`: edge `factory1` → global `factory1`
+- `20_connect_factory1-to-global/pipeline.yml`: global `factory1` → global `global`
+- `10_connect_global-to-postgres/pipeline.yml`: global `global` → TimescaleDB (topic-id cache in Redis, numeric/text split)
 
 ## Network Architecture
 
@@ -89,6 +91,9 @@ The stack uses Docker networks to isolate communication:
 - `kafka-global`: Global Kafka messaging
 - `kafka-edge`: Edge Kafka messaging  
 - `mqtt`: MQTT broker and clients
+
+Not on the shared networks: `10_` has a private `global-to-postgres` bridge for its Redis/monitor sidecars;
+`91_telegraf` and `99_opcplc` have no `networks:` and reach the host via `host.docker.internal`.
 
 ## Data Storage
 
@@ -100,14 +105,25 @@ All persistent data lives under `${STACK_DATA_DIR}` (default `/srv/uns-data`, se
 
 ## Service Access Points
 
-- **Grafana**: http://localhost:3000 (admin credentials in .env)
-- **Redpanda Console Global**: http://localhost:8090
-- **Redpanda Console Edge**: http://localhost:8091
-- **TimescaleDB**: localhost:5432 (PostgreSQL protocol)
-- **Global Kafka**: localhost:29092
-- **Edge Kafka**: localhost:29093
-- **Global Node-RED**: http://localhost:1880
-- **Edge Node-RED**: http://localhost:1881
+Host ports as published in the `docker-compose.yml` files (see `INSECURITY.md` for what is unauthenticated).
+
+| Service | Dir | Bind | Host port | Notes |
+|---------|-----|------|-----------|-------|
+| Grafana | `05_` | 0.0.0.0 | 3000 | admin credentials in `.env` |
+| Adminer | `09_` | 0.0.0.0 | 3010 | |
+| TimescaleDB | `11_` | – | – | not published; `timescaledb:5432` on `postgres` net only |
+| Node-RED global | `19_` | 0.0.0.0 | 1881 | |
+| Redpanda global Kafka | `30_` | 0.0.0.0 | 29092 | advertises `host.docker.internal:29092` |
+| Redpanda global SR / proxy / admin | `30_` | 127.0.0.1 | 28081 / 28082 / 29644 | |
+| Redpanda Console global | `30_` | 0.0.0.0 | 8090 | |
+| Redpanda edge Kafka | `60_` | 127.0.0.1 | 19092 | |
+| Redpanda edge SR / proxy / admin | `60_` | 127.0.0.1 | 18081 / 18082 / 19644 | |
+| Redpanda Console edge | `60_` | 0.0.0.0 | 8080 | |
+| Node-RED edge | `80_` | 0.0.0.0 | 1880 | |
+| Mosquitto | `90_` | 0.0.0.0 | 1883 | |
+| OPC PLC simulator | `99_` | 0.0.0.0 | 4840 | |
+
+Connect instances (`10_`, `20_`, `55_`, `65_`) only `expose` 4195 (health endpoint), not published.
 
 ## Development Guidelines
 
