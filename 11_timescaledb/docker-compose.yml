@@ -5,13 +5,13 @@ services:
     restart: always
     expose:
       - 5432
-    env_file:
-      - .env
     environment:
       PGDATA: '/var/lib/postgresql/data'
       POSTGRES_DB: '${POSTGRES_DB}'
       POSTGRES_USER: '${POSTGRES_USER}'
       POSTGRES_PASSWORD: '${POSTGRES_PASSWORD}'
+      GRAFANA_DB_USER: '${GRAFANA_DB_USER}'
+      GRAFANA_DB_PASS: '${GRAFANA_DB_PASS}'
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
       interval: 30s
@@ -19,9 +19,10 @@ services:
       start_period: 20s
     volumes:
       - ${STACK_DATA_DIR}/timescaledb/postgres:/var/lib/postgresql/data
-      - ./db-init/100_create_grafana_user.sh:/docker-entrypoint-initdb.d/100_create_grafana_user.sh
-      - ./db-init/101_create-tables.sql:/docker-entrypoint-initdb.d/101_create-tables.sql
-      - ./db-init/102_create-views.sql:/docker-entrypoint-initdb.d/102_create-views.sql
+      # per-file mounts: a dir mount would hide the image's own 000_/001_ init scripts
+      - ./db-init/101_create-tables.sql:/docker-entrypoint-initdb.d/101_create-tables.sql:ro
+      - ./db-init/102_create-views.sql:/docker-entrypoint-initdb.d/102_create-views.sql:ro
+      - ./db-init/103_create_grafana_user.sh:/docker-entrypoint-initdb.d/103_create_grafana_user.sh:ro
     networks:
       - postgres
 

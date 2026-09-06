@@ -8,4 +8,4 @@ fi
 
 source ../.env
 
-docker exec -i timescaledb pg_dump -d "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost/${POSTGRES_DB}" -Fc > "${POSTGRES_DB}_$(date +%Y%m%d-%H%M%S).dump"
+docker exec -i timescaledb pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc > "${POSTGRES_DB}_$(date +%Y%m%d-%H%M%S).dump"

@@ -71,7 +71,7 @@ cd 11_timescaledb/
 
 ### Credentials
 - `.env` (repo root, gitignored): host settings (`STACK_DATA_DIR`, `CONTAINER_SOCKET`), DB passwords, Grafana admin credentials
-- Service directories that need it contain a `.env -> ../.env` symlink (compose interpolation / env_file)
+- Service directories that need it contain a `.env -> ../.env` symlink (compose interpolation)
 
 ### Service Control
 - `.autostart` files in service directories control which services start with global commands

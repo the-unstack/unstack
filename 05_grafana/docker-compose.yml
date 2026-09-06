@@ -5,12 +5,14 @@ services:
     restart: always
     ports:             # disable ports section, when running with reverse proxy
       - 3000:3000      #
-    env_file:
-      - .env
     environment:
       GF_SERVER_ROOT_URL: ""   # only needed with reverse proxy
       GF_SECURITY_ADMIN_USER: ${GRAFANA_SECURITY_ADMIN_USER}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_SECURITY_ADMIN_PASSWORD}
+      # datasource provisioning (config/datasources.yml)
+      GRAFANA_DB_USER: ${GRAFANA_DB_USER}
+      GRAFANA_DB_PASS: ${GRAFANA_DB_PASS}
+      POSTGRES_DB: ${POSTGRES_DB}
     user: '1000'
     volumes:
       - ./grafana.ini:/etc/grafana/grafana.ini

@@ -8,4 +8,4 @@ fi
 
 source ../.env
 
-docker exec -it timescaledb psql -d "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost/${POSTGRES_DB}" -c "SELECT version();"
+docker exec -it timescaledb psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT version();"

@@ -6,8 +6,6 @@ services:
     expose:
       - "4195"
     command: -c /config/pipeline.yml
-    env_file:
-      - .env
     environment:
       DB_HOST: timescaledb
       DB_PORT: 5432
