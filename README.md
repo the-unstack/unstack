@@ -34,6 +34,31 @@ It delivers your data from your edge devices to your central dashboards and beyo
 Even in small commercial applications, you quickly reach the limitations of the [MING][ming-url] stack.<br>
 This is where the UNStack comes in!
 
+## Architecture
+The numbering follows the automation pyramid: sort the folders and you get the hierarchy.
+
+```
+                /\                  GLOBAL
+               /  \                  05_grafana
+              /    \                 09_adminer
+             /      \                10_connect_global-to-postgres
+            /        \               11_timescaledb
+           /          \              19_nodered_global
+          /            \             20_connect_factory1-to-global
+         /              \            30_redpanda_broker-global
+        /________________\
+
+        __________________          EDGE
+       /                  \          55_connect_kafka-to-cloud
+      /                    \         60_redpanda_broker-edge
+     /                      \        65_connect_mqtt-to-kafka
+    /                        \       80_nodered_edge
+   /                          \      90_mosquitto_broker-edge
+  /                            \     91_telegraf_opcua-to-mqtt
+ /                              \    99_opcplc_opcua-simulator
+/________________________________\
+```
+
 ## Under the hood
 - Grafana (Dashboards) ([Github][grafana-url-github], [Docker Hub][grafana-url-dockerhub])
 - TimescaleDB ([PostgreSQL][postgres-url] extension) ([Github][timescale-url-github], [Docker Hub][timescale-url-dockerhub])
