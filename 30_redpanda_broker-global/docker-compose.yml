@@ -1,8 +1,29 @@
+x-defaults: &defaults
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"        # Docker rotates; podman (k8s-file) ignores max-file and truncates at max-size
+
+x-healthcheck: &healthcheck
+  interval: 30s
+  timeout: 5s
+  retries: 3
+  start_period: 30s
+
 services:
   redpanda-global:
     image: redpandadata/redpanda:latest
     container_name: redpanda-broker-global
     restart: always
+    <<: *defaults
+    deploy:
+      resources:
+        limits:
+          memory: 1536m
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD-SHELL", "rpk cluster health | grep -E 'Healthy:.+true'"]
     ports:
       - 127.0.0.1:28081:28081
       - 127.0.0.1:28082:28082
@@ -30,17 +51,19 @@ services:
       - "host.docker.internal:host-gateway"
     networks:
       - kafka-global
-    healthcheck:
-      test: ["CMD-SHELL", "rpk cluster health | grep -E 'Healthy:.+true' || exit 1"]
-      interval: 30s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
 
   console-global:
     image: redpandadata/console:latest
     container_name: redpanda-console-global
     restart: always
+    <<: *defaults
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8080/admin/health"]
     #expose:         # enable when running with a separate reverse proxy
     #  - 8080
     ports:           # enable for testing
@@ -63,6 +86,9 @@ services:
     image: redpandadata/redpanda:latest
     container_name: redpanda-topic-init-global
     restart: "no"
+    <<: *defaults
+    healthcheck:
+      disable: true
     depends_on:
       redpanda-global:
         condition: service_healthy

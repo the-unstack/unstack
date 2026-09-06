@@ -1,8 +1,29 @@
+x-defaults: &defaults
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"        # Docker rotates; podman (k8s-file) ignores max-file and truncates at max-size
+
+x-healthcheck: &healthcheck
+  interval: 30s
+  timeout: 5s
+  retries: 3
+  start_period: 30s
+
 services:
   connect:
     image: redpandadata/connect:latest
     container_name: connect-kafka-to-cloud
     restart: always
+    <<: *defaults
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:4195/ready"]
     expose:
       - "4195"
     environment:
@@ -11,8 +32,6 @@ services:
     command: -c /config/pipeline.yml
     volumes:
       - ./pipeline.yml:/config/pipeline.yml
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:4195/ready"]
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:

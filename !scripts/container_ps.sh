@@ -1,4 +1,6 @@
 #!/bin/bash
+# shellcheck source=!scripts/_lib.sh
+source "$(dirname "$(readlink -f "$0")")/_lib.sh"
 
 # Print header
 printf "%-28s %-32s %-20s %s\n" "NAMES" "IMAGE" "CREATED" "STATUS"
@@ -13,4 +15,3 @@ while IFS='|' read -r names image created status ports; do
         printf "                            PORTS: <none>\n"
     fi
 done
-

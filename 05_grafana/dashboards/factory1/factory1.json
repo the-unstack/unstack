@@ -141,7 +141,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT *\r\nFROM process_value_numeric_with_topic\r\nWHERE\r\n  (\r\n    topic = 'uns/v1/company/site/area/productionline/workcell/origin/pressure'\r\n    AND $__timeFilter(\"timestamp\")\r\n  )",
+          "rawSql": "SELECT *\r\nFROM process_value_numeric_with_topic\r\nWHERE\r\n  (\r\n    topic = 'uns/v1/company/site/area/productionline/workcell/origin/pressure'\r\n    AND $__timeFilter(\"timestamp\")\r\n  )\r\nORDER BY \"timestamp\"",
           "refId": "A",
           "sql": {
             "columns": [
@@ -254,7 +254,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT *\r\nFROM process_value_numeric_with_topic\r\nWHERE\r\n  (\r\n    topic = 'uns/v1/company/site/area/productionline/workcell/origin/humidity'\r\n    AND $__timeFilter(\"timestamp\")\r\n  )",
+          "rawSql": "SELECT *\r\nFROM process_value_numeric_with_topic\r\nWHERE\r\n  (\r\n    topic = 'uns/v1/company/site/area/productionline/workcell/origin/humidity'\r\n    AND $__timeFilter(\"timestamp\")\r\n  )\r\nORDER BY \"timestamp\"",
           "refId": "A",
           "sql": {
             "columns": [

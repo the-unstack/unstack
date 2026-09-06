@@ -1,11 +1,5 @@
 #!/bin/bash
-cd "$(dirname "$0")"
-
-if [ ! -f ../.env ]; then
-   echo "../.env not found! (cp .env.example .env)"
-   exit 1
-fi
-
-source ../.env
-
+# shellcheck source=!scripts/_lib.sh
+source "$(dirname "$0")/../!scripts/_lib.sh"
+load_env
 docker exec -it timescaledb bash

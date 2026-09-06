@@ -1,22 +1,41 @@
+x-defaults: &defaults
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"        # Docker rotates; podman (k8s-file) ignores max-file and truncates at max-size
+
+x-healthcheck: &healthcheck
+  interval: 30s
+  timeout: 5s
+  retries: 3
+  start_period: 30s
+
 services:
   timescaledb:
     image: timescale/timescaledb:latest-pg18
     container_name: timescaledb
     restart: always
+    <<: *defaults
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
     expose:
       - 5432
+    shm_size: 256mb
     environment:
-      PGDATA: '/var/lib/postgresql/data'
+      PGDATA: '/var/lib/postgresql/data/pgdata'   # subdir: mount root stays free of PG's lost+found/permission checks
       POSTGRES_DB: '${POSTGRES_DB}'
       POSTGRES_USER: '${POSTGRES_USER}'
       POSTGRES_PASSWORD: '${POSTGRES_PASSWORD}'
       GRAFANA_DB_USER: '${GRAFANA_DB_USER}'
       GRAFANA_DB_PASS: '${GRAFANA_DB_PASS}'
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-      interval: 30s
-      timeout: 10s
-      start_period: 20s
+      TS_TUNE_MEMORY: 1GB     # timescaledb-tune sizes for the container limit, not the host
+      TS_TUNE_NUM_CPUS: 2
     volumes:
       - ${STACK_DATA_DIR}/timescaledb/postgres:/var/lib/postgresql/data
       # per-file mounts: a dir mount would hide the image's own 000_/001_ init scripts

@@ -1,6 +1,7 @@
 #!/bin/bash
-
-cd "$(dirname "$(readlink -f "$0")")/.." || exit 1
+# shellcheck source=!scripts/_lib.sh
+source "$(dirname "$(readlink -f "$0")")/_lib.sh"
+cd "$ROOT_DIR"
 
 # Function to extract external networks from a docker-compose.yml file
 extract_external_networks() {
@@ -8,7 +9,7 @@ extract_external_networks() {
     
     # Use yq if available (more reliable YAML parsing)
     if command -v yq &> /dev/null; then
-        yq eval '.networks | to_entries | .[] | select(.value.external == true) | .key' "$compose_file" 2>/dev/null | tr '\n' ' '
+        yq eval '.networks | to_entries | .[] | select(.value.external == true) | .key' "$compose_file" 2>/dev/null | tr '\n' ' ' || true
     else
         # Fallback to grep/awk parsing (less reliable but works without yq)
         awk '
@@ -22,7 +23,7 @@ extract_external_networks() {
                 print network_name
             }
         }
-        ' "$compose_file" | tr '\n' ' '
+        ' "$compose_file" | tr '\n' ' ' || true
     fi
 }
 
@@ -56,7 +57,7 @@ done < <(find . -mindepth 2 -name "docker-compose.yml" -type f -print0 | sort -z
 # Find the maximum length of directory names for alignment
 max_length=0
 for dir in "${directories[@]}"; do
-    if [ ${#dir} -gt $max_length ]; then
+    if [ ${#dir} -gt "$max_length" ]; then
         max_length=${#dir}
     fi
 done

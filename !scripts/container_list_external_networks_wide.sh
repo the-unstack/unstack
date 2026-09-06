@@ -1,6 +1,7 @@
 #!/bin/bash
-
-cd "$(dirname "$(readlink -f "$0")")/.." || exit 1
+# shellcheck source=!scripts/_lib.sh
+source "$(dirname "$(readlink -f "$0")")/_lib.sh"
+cd "$ROOT_DIR"
 
 # Function to extract external networks from a docker-compose.yml file
 extract_external_networks() {
@@ -8,7 +9,7 @@ extract_external_networks() {
 
     # Use yq if available (more reliable YAML parsing)
     if command -v yq &> /dev/null; then
-        yq eval '.networks | to_entries | .[] | select(.value.external == true) | .key' "$compose_file" 2>/dev/null
+        yq eval '.networks | to_entries | .[] | select(.value.external == true) | .key' "$compose_file" 2>/dev/null || true
     else
         # Fallback to grep/awk parsing (less reliable but works without yq)
         awk '
@@ -22,7 +23,7 @@ extract_external_networks() {
                 print network_name
             }
         }
-        ' "$compose_file"
+        ' "$compose_file" || true
     fi
 }
 
@@ -54,7 +55,7 @@ while IFS= read -r -d '' compose_file; do
         
         # Add networks to the global list (avoiding duplicates)
         while IFS= read -r network; do
-            if [ -n "$network" ] && [[ ! " ${all_networks[*]} " =~ " $network " ]]; then
+            if [ -n "$network" ] && [[ " ${all_networks[*]} " != *" $network "* ]]; then
                 all_networks+=("$network")
             fi
         done <<< "$external_networks_raw"
@@ -71,13 +72,12 @@ if [ ${#directories[@]} -eq 0 ]; then
 fi
 
 # Sort networks alphabetically
-IFS=$'\n' all_networks=($(sort <<<"${all_networks[*]}"))
-unset IFS
+mapfile -t all_networks < <(printf '%s\n' "${all_networks[@]}" | sort -u)
 
 # Calculate column widths
 max_dir_length=0
 for dir in "${directories[@]}"; do
-    if [ ${#dir} -gt $max_dir_length ]; then
+    if [ ${#dir} -gt "$max_dir_length" ]; then
         max_dir_length=${#dir}
     fi
 done
@@ -87,7 +87,7 @@ max_dir_length=$((max_dir_length + 2))
 declare -a network_widths
 for network in "${all_networks[@]}"; do
     width=$((${#network} + 2))
-    network_widths+=($width)
+    network_widths+=("$width")
 done
 
 # Print header
@@ -98,9 +98,9 @@ done
 echo
 
 # Print separator line
-printf "%*s" $max_dir_length "" | tr ' ' '-'
+printf "%*s" "$max_dir_length" "" | tr ' ' '-'
 for width in "${network_widths[@]}"; do
-    printf "%*s" $width "" | tr ' ' '-'
+    printf "%*s" "$width" "" | tr ' ' '-'
 done
 echo
 

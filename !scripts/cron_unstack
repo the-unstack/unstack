@@ -1,7 +1,6 @@
 #
-# Regular cron jobs for UNStack
-#
-# Every night
+# Regular cron jobs for UNStack (installed by cron_install.sh, which substitutes /srv/unstack)
+# output: journalctl -t unstack
 #
 # m	h	dom	mon	dow	user	command
-30	1	*	*	*	root    /bin/bash /srv/unstack/container_all_pull+restart.sh
+30	1	*	*	*	root	/bin/bash /srv/unstack/container_all_pull+restart.sh 2>&1 | logger -t unstack

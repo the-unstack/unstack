@@ -104,7 +104,7 @@ All persistent data lives under `${STACK_DATA_DIR}` (default `/srv/uns-data`, se
 `!scripts/initialize.sh` creates the dirs with the container's uid (rootless Podman: via `podman unshare`):
 - `grafana` (1000), `nodered-global` / `nodered-edge` (1000)
 - `redpanda-broker-global` / `redpanda-broker-edge` (101)
-- `timescaledb/postgres` (70), `mosquitto/data` (1883)
+- `timescaledb/postgres` (70, PGDATA in subdir `pgdata`), `mosquitto/data` (1883)
 
 ## Service Access Points
 Host ports as published in the `docker-compose.yml` files (see `INSECURITY.md` for what is unauthenticated).
@@ -144,3 +144,4 @@ Connect instances (`10_`, `20_`, `55_`, `65_`) only `expose` 4195 (health endpoi
 3. **Credentials**: Never commit actual passwords; `.env` is gitignored, keep `.env.example` current
 4. **Autostart Control**: Use `.autostart` files to control which services start automatically
 5. **Data Persistence**: All data should persist under `${STACK_DATA_DIR}` volumes
+6. **Scripts**: `source !scripts/_lib.sh` (strict mode, `ROOT_DIR`, `SCRIPT_DIR`, `load_env`); compose files share the `x-defaults`/`x-healthcheck` anchors (log rotation, memory limit, healthcheck)

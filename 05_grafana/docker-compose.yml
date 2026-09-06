@@ -1,8 +1,29 @@
+x-defaults: &defaults
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"        # Docker rotates; podman (k8s-file) ignores max-file and truncates at max-size
+
+x-healthcheck: &healthcheck
+  interval: 30s
+  timeout: 5s
+  retries: 3
+  start_period: 30s
+
 services:
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
     restart: always
+    <<: *defaults
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:3000/api/health"]
     ports:             # disable ports section, when running with reverse proxy
       - 3000:3000      #
     environment:
@@ -20,8 +41,6 @@ services:
       - ./config/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml
       - ./dashboards:/var/lib/grafana/dashboards
       - ${STACK_DATA_DIR}/grafana:/var/lib/grafana
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
     networks:
       - postgres
 

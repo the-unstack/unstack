@@ -1,8 +1,29 @@
+x-defaults: &defaults
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"        # Docker rotates; podman (k8s-file) ignores max-file and truncates at max-size
+
+x-healthcheck: &healthcheck
+  interval: 30s
+  timeout: 5s
+  retries: 3
+  start_period: 30s
+
 services:
   nodered-global:
     container_name: nodered-global
     image: nodered/node-red:latest
     restart: always
+    <<: *defaults
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:1880/"]
     ports:               # disable ports section when running with separate reverse proxy
      - 1881:1880         #
     volumes:
