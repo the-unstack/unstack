@@ -12,10 +12,10 @@ x-healthcheck: &healthcheck
   start_period: 30s
 
 services:
-  connect:
+  connect-global-to-postgres:
     image: redpandadata/connect:latest
     container_name: connect-global-to-postgres
-    restart: always
+    restart: unless-stopped
     <<: *defaults
     deploy:
       resources:
@@ -24,8 +24,6 @@ services:
     healthcheck:
       <<: *healthcheck
       test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:4195/ready"]
-    expose:
-      - "4195"
     command: -c /config/pipeline.yml
     environment:
       DB_HOST: timescaledb
@@ -33,9 +31,10 @@ services:
       DB_USER: ${POSTGRES_USER}
       DB_PASS: ${POSTGRES_PASSWORD}
       DB_DATABASE: ${POSTGRES_DB}
-      KAFKA_BROKER: redpanda-global:9092
+      KAFKA_BROKER: "redpanda-global:9092"
+      REDIS_URL: "redis://redis:6379"
     volumes:
-      - ./pipeline.yml:/config/pipeline.yml
+      - ./pipeline.yml:/config/pipeline.yml:ro
     depends_on:
       redis:
         condition: service_healthy
@@ -48,7 +47,7 @@ services:
   redis:
     image: redis:latest
     container_name: connect-global-to-postgres-redis
-    restart: always
+    restart: unless-stopped
     <<: *defaults
     deploy:
       resources:
@@ -57,11 +56,9 @@ services:
     healthcheck:
       <<: *healthcheck
       test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
-    expose:
-      - "6379"
     command: --loglevel warning # debug, verbose, notice, warning, nothing
     environment:
-      - REDIS_PORT=6379
+      REDIS_PORT: 6379
     networks:
       - global-to-postgres
 

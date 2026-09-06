@@ -1,1 +1,1 @@
-./!scripts/container_ps.sh
+./scripts/container_ps.sh

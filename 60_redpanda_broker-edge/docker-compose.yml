@@ -15,7 +15,7 @@ services:
   redpanda-edge:
     image: redpandadata/redpanda:latest
     container_name: redpanda-broker-edge
-    restart: always
+    restart: unless-stopped
     <<: *defaults
     deploy:
       resources:
@@ -53,7 +53,7 @@ services:
   console-edge:
     image: redpandadata/console:latest
     container_name: redpanda-console-edge
-    restart: always
+    restart: unless-stopped
     <<: *defaults
     deploy:
       resources:
@@ -70,7 +70,7 @@ services:
     entrypoint: /bin/sh
     command: -c '/app/console'
     volumes:
-      - ./redpanda-console.yml:/tmp/config.yml
+      - ./redpanda-console.yml:/tmp/config.yml:ro
     environment:
       CONFIG_FILEPATH: /tmp/config.yml
     networks:

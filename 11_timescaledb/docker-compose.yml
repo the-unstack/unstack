@@ -15,7 +15,7 @@ services:
   timescaledb:
     image: timescale/timescaledb:latest-pg18
     container_name: timescaledb
-    restart: always
+    restart: unless-stopped
     <<: *defaults
     deploy:
       resources:
@@ -24,8 +24,6 @@ services:
     healthcheck:
       <<: *healthcheck
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-    expose:
-      - 5432
     shm_size: 256mb
     environment:
       PGDATA: '/var/lib/postgresql/data/pgdata'   # subdir: mount root stays free of PG's lost+found/permission checks

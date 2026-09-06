@@ -35,16 +35,16 @@ the order resembles the hierarchy.
 ```bash
 # Copy template and edit: passwords, STACK_DATA_DIR
 cp .env.example .env
-# Data dirs + docker networks are created by ./container_all_restart.sh (idempotent !scripts/initialize.sh)
+# Data dirs + docker networks are created by ./container_all_restart.sh (idempotent scripts/initialize.sh)
 ```
 
 ### Managing All Services
-Root `container_*.sh` are symlinks into `!scripts/`. They act on every `NN_*` dir that has a `.autostart` file.
+Root `container_*.sh` are symlinks into `scripts/`. They act on every `NN_*` dir that has a `.autostart` file.
 ```bash
 ./container_all_restart.sh          # initialize.sh, down (99→05), up: DB + brokers first, then the rest (05→99)
 ./container_all_down.sh             # Stop all services
 ```
-Full script inventory, destructive flags and cron setup: `!scripts/README.md`.
+Full script inventory, destructive flags and cron setup: `scripts/README.md`.
 
 ### Managing Individual Services
 Each numbered directory contains standard scripts:
@@ -54,12 +54,12 @@ cd XX_service_name/
 ./container_down.sh       # Stop service
 ./container_logs.sh       # View logs
 ./container_pull.sh       # Pull latest image
+./container_exec_it.sh    # Shell in the first service of this dir (bash, else sh); pass a service key to pick another
 ```
 
 ### Database Operations
 ```bash
 cd 11_timescaledb/
-./container_exec_run.sh                           # Bash shell inside the container
 ./container_exec_sql.sh                           # Execute SQL interactively
 ./container_exec_sql_dump.sh                      # Dump database (pg_dump -Fc, timestamped file)
 ./container_exec_sql_get-postgres-version.sh      # Check PostgreSQL version
@@ -75,7 +75,8 @@ cd 11_timescaledb/
 
 ### Service Control
 - `.autostart` files in service directories control which services start with global commands
-- `docker-compose.yml` in each service directory defines the container configuration
+- `docker-compose.yml` in each service directory defines the container configuration; service keys equal `container_name` (`timescaledb`, `redpanda-global`, `connect-mqtt-to-kafka`, ...)
+- Cross-service endpoints are compose `environment:` vars consumed by the config file (`KAFKA_BROKER*`, `MQTT_BROKER_LOCAL`, `REDIS_URL`, `DB_HOST`/`DB_PORT`, `OPCUA_ENDPOINT`)
 
 ### Data Processing
 - `pipeline.yml` files in Connect services define ETL transformations
@@ -101,7 +102,7 @@ Not on the shared networks: `10_` has a private `global-to-postgres` bridge for 
 
 ## Data Storage
 All persistent data lives under `${STACK_DATA_DIR}` (default `/srv/uns-data`, set in `.env`).
-`!scripts/initialize.sh` creates the dirs with the container's uid (rootless Podman: via `podman unshare`):
+`scripts/initialize.sh` creates the dirs with the container's uid (rootless Podman: via `podman unshare`):
 - `grafana` (1000), `nodered-global` / `nodered-edge` (1000)
 - `redpanda-broker-global` / `redpanda-broker-edge` (101)
 - `timescaledb/postgres` (70, PGDATA in subdir `pgdata`), `mosquitto/data` (1883)
@@ -125,7 +126,7 @@ Host ports as published in the `docker-compose.yml` files (see `INSECURITY.md` f
 | Mosquitto | `90_` | 0.0.0.0 | 1883 | |
 | OPC PLC simulator | `99_` | 0.0.0.0 | 4840 | |
 
-Connect instances (`10_`, `20_`, `55_`, `65_`) only `expose` 4195 (health endpoint), not published.
+The Connect health endpoint (`10_`, `20_`, `55_`, `65_`, port 4195) is not published; only the compose healthcheck uses it.
 
 ## Intent & Design Goals
 ### Architecture
@@ -144,4 +145,5 @@ Connect instances (`10_`, `20_`, `55_`, `65_`) only `expose` 4195 (health endpoi
 3. **Credentials**: Never commit actual passwords; `.env` is gitignored, keep `.env.example` current
 4. **Autostart Control**: Use `.autostart` files to control which services start automatically
 5. **Data Persistence**: All data should persist under `${STACK_DATA_DIR}` volumes
-6. **Scripts**: `source !scripts/_lib.sh` (strict mode, `ROOT_DIR`, `SCRIPT_DIR`, `load_env`); compose files share the `x-defaults`/`x-healthcheck` anchors (log rotation, memory limit, healthcheck)
+6. **Scripts**: `source scripts/_lib.sh` (strict mode, `ROOT_DIR`, `SCRIPT_DIR`, `load_env`); shared scripts live in `scripts/` and are symlinked, never copied
+7. **Compose style**: 2-space indent, map-style `environment:`, unquoted `host:container` ports, `restart: unless-stopped`, `:ro` on config mounts, no `expose:`; all files share the `x-defaults`/`x-healthcheck` anchors (log rotation, memory limit, healthcheck)

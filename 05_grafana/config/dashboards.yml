@@ -8,7 +8,7 @@ providers:
     disableDeletion: false
     allowUiUpdates: true
     options:
-      path: /var/lib/grafana/dashboards/home
+      path: /etc/grafana/dashboards/home
 
   - name: 'Simulator'
     orgId: 1
@@ -18,8 +18,4 @@ providers:
     disableDeletion: false
     allowUiUpdates: true
     options:
-      path: /var/lib/grafana/dashboards/factory1
-
-
-
-
+      path: /etc/grafana/dashboards/factory1

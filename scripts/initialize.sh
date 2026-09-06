@@ -1,6 +1,6 @@
 #!/bin/bash
 # Idempotent: creates data dirs (+ ownership) and docker networks. Safe to run on every restart.
-# shellcheck source=!scripts/_lib.sh
+# shellcheck source=scripts/_lib.sh
 source "$(dirname "$(readlink -f "$0")")/_lib.sh"
 load_env
 : "${STACK_DATA_DIR:?set STACK_DATA_DIR in .env}"

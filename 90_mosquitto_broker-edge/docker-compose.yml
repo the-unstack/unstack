@@ -15,7 +15,7 @@ services:
   mosquitto:
     image: eclipse-mosquitto:latest
     container_name: mosquitto-broker
-    restart: always
+    restart: unless-stopped
     <<: *defaults
     deploy:
       resources:
@@ -27,7 +27,7 @@ services:
     ports:
       - 1883:1883
     volumes:
-      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
       - ${STACK_DATA_DIR}/mosquitto/data:/mosquitto/data
     networks:
       - mqtt

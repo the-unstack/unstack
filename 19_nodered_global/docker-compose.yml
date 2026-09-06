@@ -15,7 +15,7 @@ services:
   nodered-global:
     container_name: nodered-global
     image: nodered/node-red:latest
-    restart: always
+    restart: unless-stopped
     <<: *defaults
     deploy:
       resources:
@@ -24,8 +24,8 @@ services:
     healthcheck:
       <<: *healthcheck
       test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:1880/"]
-    ports:               # disable ports section when running with separate reverse proxy
-     - 1881:1880         #
+    ports:
+      - 1881:1880
     volumes:
       - ${STACK_DATA_DIR}/nodered-global:/data
       - /etc/localtime:/etc/localtime:ro

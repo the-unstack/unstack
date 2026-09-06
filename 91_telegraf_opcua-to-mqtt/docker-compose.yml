@@ -15,7 +15,7 @@ services:
   telegraf:
     image: telegraf:latest
     container_name: telegraf-opcua-to-mqtt
-    restart: always
+    restart: unless-stopped
     <<: *defaults
     deploy:
       resources:
@@ -24,6 +24,9 @@ services:
     healthcheck:
       <<: *healthcheck
       test: ["CMD-SHELL", "pgrep telegraf"]
+    environment:
+      MQTT_BROKER_LOCAL: "host.docker.internal:1883"
+      OPCUA_ENDPOINT: "opc.tcp://host.docker.internal:4840"
     volumes:
       - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
     extra_hosts:

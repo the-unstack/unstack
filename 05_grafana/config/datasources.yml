@@ -5,7 +5,7 @@ datasources:
     type: postgres
     uid: DS_TIMESCALEDB
     isDefault: true
-    url: timescaledb:5432
+    url: ${DB_HOST}:${DB_PORT}
     user: $GRAFANA_DB_USER
     secureJsonData:
       password: $GRAFANA_DB_PASS

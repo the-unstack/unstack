@@ -15,7 +15,7 @@ services:
   redpanda-global:
     image: redpandadata/redpanda:latest
     container_name: redpanda-broker-global
-    restart: always
+    restart: unless-stopped
     <<: *defaults
     deploy:
       resources:
@@ -55,7 +55,7 @@ services:
   console-global:
     image: redpandadata/console:latest
     container_name: redpanda-console-global
-    restart: always
+    restart: unless-stopped
     <<: *defaults
     deploy:
       resources:
@@ -64,9 +64,7 @@ services:
     healthcheck:
       <<: *healthcheck
       test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8080/admin/health"]
-    #expose:         # enable when running with a separate reverse proxy
-    #  - 8080
-    ports:           # enable for testing
+    ports:
       - 8090:8080
     depends_on:
       redpanda-global:
@@ -74,12 +72,11 @@ services:
     entrypoint: /bin/sh
     command: -c '/app/console'
     volumes:
-      - ./redpanda-console.yml:/tmp/config.yml
+      - ./redpanda-console.yml:/tmp/config.yml:ro
     environment:
       CONFIG_FILEPATH: /tmp/config.yml
     networks:
       - kafka-global
-      #- reverseproxy   # only enable when running with a separate reverse proxy
 
   # one-shot: create topics with fixed partitions + retention; alter-config also applies to existing topics
   topic-init:
@@ -106,5 +103,3 @@ services:
 networks:
   kafka-global:
     external: true
-  #reverseproxy:
-  #  external: true

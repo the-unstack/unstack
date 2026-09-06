@@ -1,4 +1,4 @@
-.claude/*
+.claude/
 .umh
 .diff-logs
 .temp
@@ -6,3 +6,4 @@
 /.env
 *.dump
 .issues/
+telegraf.example.conf

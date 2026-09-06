@@ -1,1 +1,1 @@
-../!scripts/container_logs.sh
+../scripts/container_logs.sh

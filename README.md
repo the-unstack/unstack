@@ -93,8 +93,14 @@ cd unstack
 
 cp .env.example .env      # edit: passwords, STACK_DATA_DIR
 ./container_all_restart.sh
+sudo ./scripts/cron_install.sh    # optional: nightly pull + restart (01:30)
 ```
-- Access Grafana: http://hostip:3000
+- Access (replace `hostip`):
+  - Grafana: http://hostip:3000
+  - Node-RED: http://hostip:1881 (global), http://hostip:1880 (edge)
+  - Redpanda Console: http://hostip:8090 (global), http://hostip:8080 (edge)
+  - Adminer: http://hostip:3010
+  - all ports: see the table in [AGENTS.md](AGENTS.md#service-access-points)
 
 ## Roadmap
 - [ ] v1: One-way, reporting-only (edge ➜ global)

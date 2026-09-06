@@ -15,7 +15,7 @@ services:
   nodered-edge:
     container_name: nodered-edge
     image: nodered/node-red:latest
-    restart: always
+    restart: unless-stopped
     <<: *defaults
     deploy:
       resources:

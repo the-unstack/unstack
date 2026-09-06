@@ -1,1 +1,1 @@
-./!scripts/container_all_pull+restart.sh
+./scripts/container_all_pull+restart.sh

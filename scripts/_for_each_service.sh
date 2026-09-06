@@ -2,7 +2,7 @@
 # usage: _for_each_service.sh [-r] [-f REGEX | -x REGEX] <docker compose args...>
 #   -r  descending order   -f only dirs matching REGEX   -x skip dirs matching REGEX
 # runs `docker compose <args>` in every NN_* dir that has .autostart; keeps going, exit 1 if any failed
-# shellcheck source=!scripts/_lib.sh
+# shellcheck source=scripts/_lib.sh
 source "$(dirname "$(readlink -f "$0")")/_lib.sh"
 
 SORT=(sort -z); FILTER=(cat)

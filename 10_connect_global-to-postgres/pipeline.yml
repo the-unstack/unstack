@@ -11,7 +11,7 @@ input:
 cache_resources:
   - label: redis
     redis:
-      url: redis://redis:6379
+      url: ${REDIS_URL}
       default_ttl: 24h   # stale ids are also evicted on FK error, see output
 
 pipeline:

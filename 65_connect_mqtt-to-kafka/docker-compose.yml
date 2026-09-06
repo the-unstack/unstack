@@ -12,10 +12,10 @@ x-healthcheck: &healthcheck
   start_period: 30s
 
 services:
-  connect:
+  connect-mqtt-to-kafka:
     image: redpandadata/connect:latest
     container_name: connect-mqtt-to-kafka
-    restart: always
+    restart: unless-stopped
     <<: *defaults
     deploy:
       resources:
@@ -24,14 +24,12 @@ services:
     healthcheck:
       <<: *healthcheck
       test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:4195/ready"]
-    expose:
-      - "4195"
     command: -c /config/pipeline.yml
     environment:
       MQTT_BROKER_LOCAL: "mosquitto:1883"
       KAFKA_BROKER_LOCAL: "redpanda-edge:9092"
     volumes:
-      - ./pipeline.yml:/config/pipeline.yml
+      - ./pipeline.yml:/config/pipeline.yml:ro
     networks:
       - kafka-edge
       - mqtt

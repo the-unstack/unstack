@@ -1,1 +1,1 @@
-../!scripts/container_pull.sh
+../scripts/container_pull.sh

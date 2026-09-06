@@ -1,1 +1,1 @@
-../!scripts/container_down.sh
+../scripts/container_down.sh

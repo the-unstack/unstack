@@ -1,6 +1,6 @@
-# !scripts
+# scripts
 
-Shared scripts. The root-level `container_*.sh` and each service's `container_{restart,down,logs,pull}.sh` are symlinks into this dir.
+Shared scripts. The frequently used stack-wide ones (`container_all_*.sh`, `container_ps.sh`) are symlinked at the repo root, the rest run as `./scripts/X.sh`; each service dir symlinks `container_{restart,down,logs,pull,exec_it}.sh`.
 Every script starts with `source _lib.sh`, so they work from here, via the symlinks, or from cron.
 
 ## Shared
@@ -16,9 +16,9 @@ Every script starts with `source _lib.sh`, so they work from here, via the symli
 |--------|------|-------------|
 | `initialize.sh` | Creates `${STACK_DATA_DIR}` dirs with container uids + external docker networks. Idempotent, needs `sudo` (or `podman unshare`). Run automatically by the `*_restart.sh` scripts. | no |
 | `container_all_restart.sh` | `initialize.sh`, `down` descending (99→05), then `up -d` in two passes: infra first (`timescaledb`, `_broker-`, `mosquitto`), then the rest ascending. Exit 1 if any service failed. | restarts |
-| `container_all_pull+restart.sh` | same, with `compose pull` first. Cron target. Exit 1 if any service failed. | restarts |
+| `container_all_pull+restart.sh` | `compose pull` in every autostart dir, then `container_all_restart.sh`. Cron target. Exit 1 if any service failed. | restarts |
 | `container_all_pull.sh` | `compose pull` in every autostart dir. Exit 1 if any failed. | no |
-| `container_all_down.sh` | `compose down` in every autostart dir, descending. Exit 1 if any failed. | stops stack |
+| `container_all_down.sh` | `compose down --remove-orphans` in every autostart dir, descending. Exit 1 if any failed. | stops stack |
 | `container_ps.sh` | `docker ps` with wrapped port column | no |
 | `container_list_external_networks.sh` / `_wide.sh` | which external networks each compose file uses (uses `yq` if installed) | no |
 | `container_system_prune.sh` | `docker system prune -a -f --volumes` — removes **all** unused images, networks and volumes without asking | **yes** |
@@ -27,12 +27,13 @@ Every script starts with `source _lib.sh`, so they work from here, via the symli
 
 | Script | Does |
 |--------|------|
-| `container_restart.sh` | `compose down && up -d` |
-| `container_down.sh` | `compose down` |
+| `container_restart.sh` | `compose down --remove-orphans && up -d` |
+| `container_down.sh` | `compose down --remove-orphans` (also drops containers of renamed/removed services) |
 | `container_logs.sh` | `compose logs -f` |
 | `container_pull.sh` | `compose pull` |
+| `container_exec_it.sh` | `[SERVICE]` interactive shell (bash, else sh) in SERVICE, default: first service key of the dir's compose file |
 
-Service-specific `container_exec_*.sh` scripts live in their service dir and source `../!scripts/_lib.sh`.
+Service-specific `container_exec_*.sh` / `container_run_*.sh` scripts live in their service dir and source `../scripts/_lib.sh`.
 
 ## Cron
 

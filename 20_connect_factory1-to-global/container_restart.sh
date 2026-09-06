@@ -1,1 +1,1 @@
-../!scripts/container_restart.sh
+../scripts/container_restart.sh
