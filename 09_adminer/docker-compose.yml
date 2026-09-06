@@ -1,6 +1,6 @@
 services:
   adminer:
-    image: adminer
+    image: adminer:latest
     container_name: adminer
     restart: always
     ports:                # disable ports section when running with separate reverse proxy
