@@ -1,10 +1,11 @@
 #!/bin/bash
+cd "$(dirname "$0")"
 
-if [ ! -f ../!credentials/credentials.env ]; then
-   echo "Credentials file not found!"
+if [ ! -f ../.env ]; then
+   echo "../.env not found! (cp .env.example .env)"
    exit 1
 fi
 
-source ../!credentials/credentials.env
+source ../.env
 
-docker exec -it timescaledb pg_dump -d "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost/unifiednamespace" -Fc > unifiednamespace.dump
+docker exec -i timescaledb pg_dump -d "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost/${POSTGRES_DB}" -Fc > "${POSTGRES_DB}_$(date +%Y%m%d-%H%M%S).dump"

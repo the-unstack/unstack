@@ -2,4 +2,6 @@
 .diff-logs
 .temp
 .competition
-/!credentials/credentials.env
+/.env
+*.dump
+.issues/

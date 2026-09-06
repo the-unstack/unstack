@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd ..
+cd "$(dirname "$(readlink -f "$0")")/.." || exit 1
 
 # Function to extract external networks from a docker-compose.yml file
 extract_external_networks() {

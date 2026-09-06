@@ -6,15 +6,15 @@ datasources:
     uid: DS_TIMESCALEDB
     isDefault: true
     url: timescaledb:5432
-    user: grafana
+    user: $GRAFANA_DB_USER
     secureJsonData:
-      password: 'grafana'
+      password: $GRAFANA_DB_PASS
     jsonData:
-      database: unifiednamespace
+      database: $POSTGRES_DB
       sslmode: 'disable' # disable/require/verify-ca/verify-full
       maxOpenConns: 100
       maxIdleConns: 100
       maxIdleConnsAuto: true
       connMaxLifetime: 14400
-      postgresVersion: 1700 # 903=9.3, 904=9.4, 905=9.5, 906=9.6, 1000=10
+      postgresVersion: 1800 # 903=9.3, 904=9.4, 905=9.5, 906=9.6, 1000=10
       timescaledb: true

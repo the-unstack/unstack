@@ -87,10 +87,7 @@ cd /srv
 git clone https://github.com/the-unstack/unstack.git
 cd unstack
 
-cp './!credentials/credentials.env.example' './!credentials/credentials.env'
-# Edit /!credentials/credentials.env to set your own passwords
-
-'./!scripts/initialize.sh'
+cp .env.example .env      # edit: passwords, STACK_DATA_DIR
 ./container_all_restart.sh
 ```
 - Access Grafana: http://hostip:3000

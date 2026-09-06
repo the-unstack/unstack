@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Get current directory
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Repo root (works via root symlink and from !scripts/)
+ROOT_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
 
 # Find and process directories
-find "$SCRIPT_DIR" -maxdepth 1 -type d -name '[0-9][0-9]_*' -print0 | sort -rz | while IFS= read -r -d '' dir; do
+find "$ROOT_DIR" -maxdepth 1 -type d -name '[0-9][0-9]_*' -print0 | sort -rz | while IFS= read -r -d '' dir; do
     dir_name=$(basename "$dir")
     echo "***** $dir_name *****"
     
@@ -23,6 +23,6 @@ find "$SCRIPT_DIR" -maxdepth 1 -type d -name '[0-9][0-9]_*' -print0 | sort -rz |
     # run docker compose
     echo "docker compose down..."
     cd "$dir" && docker compose down
-    cd "$SCRIPT_DIR"
+    cd "$ROOT_DIR"
     echo ""
 done

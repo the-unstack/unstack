@@ -33,20 +33,18 @@ the order resembles the hierarchy.
 
 ### Initial Setup
 ```bash
-# Copy credentials template and edit with your passwords
-cp './!credentials/credentials.env.example' './!credentials/credentials.env'
-
-# Initialize data directories and Docker networks
-'./!scripts/initialize.sh'
+# Copy template and edit: passwords, STACK_DATA_DIR
+cp .env.example .env
+# Data dirs + docker networks are created by ./container_all_restart.sh (idempotent !scripts/initialize.sh)
 ```
 
 ### Managing All Services
 ```bash
-./docker_all_restart.sh             # Start all services with .autostart files
-./docker_all_down.sh                # Stop all services
-./docker_all_pull.sh                # Pull latest images for all services
-./docker_ps.sh                      # View running containers
-./docker_show_memory_usage.sh       # Monitor memory usage
+./container_all_restart.sh          # Start all services with .autostart files
+./container_all_down.sh             # Stop all services
+./container_all_pull.sh             # Pull latest images for all services
+./container_ps.sh                   # View running containers
+./container_stats.sh                # Monitor memory usage
 ```
 
 ### Managing Individual Services
@@ -62,18 +60,18 @@ cd XX_service_name/
 ### Database Operations
 ```bash
 cd 11_timescaledb/
-./docker_exec_sql.sh                           # Execute SQL interactively
-./docker_exec_sql_dump.sh                      # Dump database
-./docker_exec_sql_get-postgres-version.sh      # Check PostgreSQL version
-./docker_exec_sql_get-timescale-version.sh     # Check TimescaleDB version
-./docker_exec_sql_upgrade-timescale.sh         # Upgrade TimescaleDB
+./container_exec_sql.sh                           # Execute SQL interactively
+./container_exec_sql_dump.sh                      # Dump database
+./container_exec_sql_get-postgres-version.sh      # Check PostgreSQL version
+./container_exec_sql_get-timescale-version.sh     # Check TimescaleDB version
+./container_exec_sql_upgrade-timescale.sh         # Upgrade TimescaleDB
 ```
 
 ## Key Configuration Files
 
 ### Credentials
-- `!credentials/credentials.env`: Database passwords, Grafana admin credentials
-- Each service directory contains a `.env` file that sources the global credentials
+- `.env` (repo root, gitignored): host settings (`STACK_DATA_DIR`, `CONTAINER_SOCKET`), DB passwords, Grafana admin credentials
+- Service directories that need it contain a `.env -> ../.env` symlink (compose interpolation / env_file)
 
 ### Service Control
 - `.autostart` files in service directories control which services start with global commands
@@ -94,17 +92,15 @@ The stack uses Docker networks to isolate communication:
 
 ## Data Storage
 
-All persistent data is stored under `/srv/unstack-data/` with appropriate ownership:
-- `/srv/unstack-data/grafana`: Grafana dashboards and config
-- `/srv/unstack-data/timescaledb/postgres`: PostgreSQL data
-- `/srv/unstack-data/redpanda-broker-global`: Global Kafka data
-- `/srv/unstack-data/redpanda-broker-edge`: Edge Kafka data
-- `/srv/unstack-data/nodered-global`: Global Node-RED flows
-- `/srv/unstack-data/nodered-edge`: Edge Node-RED flows
+All persistent data lives under `${STACK_DATA_DIR}` (default `/srv/uns-data`, set in `.env`).
+`!scripts/initialize.sh` creates the dirs with the container's uid (rootless Podman: via `podman unshare`):
+- `grafana` (1000), `nodered-global` / `nodered-edge` (1000)
+- `redpanda-broker-global` / `redpanda-broker-edge` (101)
+- `timescaledb/postgres` (70), `mosquitto/data` (1883)
 
 ## Service Access Points
 
-- **Grafana**: http://localhost:3000 (admin credentials in credentials.env)
+- **Grafana**: http://localhost:3000 (admin credentials in .env)
 - **Redpanda Console Global**: http://localhost:8090
 - **Redpanda Console Edge**: http://localhost:8091
 - **TimescaleDB**: localhost:5432 (PostgreSQL protocol)
@@ -117,6 +113,6 @@ All persistent data is stored under `/srv/unstack-data/` with appropriate owners
 
 1. **Service Isolation**: Each service runs in its own numbered directory with standard scripts
 2. **Docker Networks**: Use appropriate networks for service communication isolation
-3. **Credentials**: Never commit actual passwords; use the credentials.env template
+3. **Credentials**: Never commit actual passwords; `.env` is gitignored, keep `.env.example` current
 4. **Autostart Control**: Use `.autostart` files to control which services start automatically
-5. **Data Persistence**: All data should persist in `/srv/unstack-data/` volumes
+5. **Data Persistence**: All data should persist under `${STACK_DATA_DIR}` volumes

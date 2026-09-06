@@ -17,7 +17,7 @@ services:
       - ./config/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
       - ./config/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml
       - ./dashboards:/var/lib/grafana/dashboards
-      - /srv/uns-data/grafana:/var/lib/grafana
+      - ${STACK_DATA_DIR}/grafana:/var/lib/grafana
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
     networks:

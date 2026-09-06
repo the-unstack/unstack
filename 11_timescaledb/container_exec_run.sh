@@ -1,10 +1,11 @@
 #!/bin/bash
+cd "$(dirname "$0")"
 
-if [ ! -f ../!credentials/credentials.env ]; then
-   echo "Credentials file not found!"
+if [ ! -f ../.env ]; then
+   echo "../.env not found! (cp .env.example .env)"
    exit 1
 fi
 
-source ../!credentials/credentials.env
+source ../.env
 
 docker exec -it timescaledb bash
