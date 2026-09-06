@@ -2,8 +2,8 @@ logger:
   level: INFO
 
 input:
-  kafka:
-    addresses: [ "${KAFKA_BROKER}" ]
+  redpanda:
+    seed_brokers: [ "${KAFKA_BROKER}" ]
     topics: [ global ]
     consumer_group: postgres
     # auto_replay_nacks: true (default) — a nack means replay, intentional
@@ -86,10 +86,11 @@ output:
       # 1. data-shaped errors → DLQ
       - check: errored() && error().re_match("missing_key|missing_timestamp|missing_value|unsupported_type")
         output:
-          kafka:
-            addresses: [ "${KAFKA_BROKER}" ]
+          redpanda:
+            seed_brokers: [ "${KAFKA_BROKER}" ]
             topic: dlq
             key: '${! metadata("kafka_key") }'
+            metadata: { include_prefixes: [ dlq_, uns_ ] }   # required: default forwards no headers
           processors:
             - mapping: |
                 meta dlq_reason = error().re_replace_all("^.*: ", "")

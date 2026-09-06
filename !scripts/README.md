@@ -8,10 +8,11 @@ Shared scripts. The root-level `container_*.sh` and each service's `container_{r
 | Script | Does | Destructive |
 |--------|------|-------------|
 | `initialize.sh` | Creates `${STACK_DATA_DIR}` dirs with container uids + external docker networks. Idempotent, needs `sudo` (or `podman unshare`). Run automatically by the `*_restart.sh` scripts. | no |
-| `container_all_restart.sh` | `initialize.sh`, then `compose down && up -d` in every `NN_*` dir that has `.autostart` | restarts |
+| `_for_each_service.sh` | shared loop: `[-r] [-f RE\|-x RE] <compose args>` in every `NN_*` dir that has `.autostart` (`-r` descending, `-f`/`-x` include/skip by regex). Used by the `container_all_*` wrappers. | depends on args |
+| `container_all_restart.sh` | `initialize.sh`, `down` descending (99→05), then `up -d` in two passes: infra first (`timescaledb`, `_broker-`, `mosquitto`), then the rest ascending | restarts |
 | `container_all_pull+restart.sh` | same, with `compose pull` first. Cron target. | restarts |
 | `container_all_pull.sh` | `compose pull` in every autostart dir | no |
-| `container_all_down.sh` | `compose down` in every autostart dir | stops stack |
+| `container_all_down.sh` | `compose down` in every autostart dir, descending | stops stack |
 | `container_ps.sh` | `docker ps` with wrapped port column | no |
 | `container_stats.sh` | live `docker stats` table, `[-r] [1|2|3]` sort column | no |
 | `container_list_external_networks.sh` / `_wide.sh` | which external networks each compose file uses (uses `yq` if installed) | no |

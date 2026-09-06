@@ -41,7 +41,7 @@ cp .env.example .env
 ### Managing All Services
 Root `container_*.sh` are symlinks into `!scripts/`. They act on every `NN_*` dir that has a `.autostart` file.
 ```bash
-./container_all_restart.sh          # initialize.sh, then compose down && up -d for all autostart services
+./container_all_restart.sh          # initialize.sh, down (99→05), up: DB + brokers first, then the rest (05→99)
 ./container_all_down.sh             # Stop all services
 ```
 Full script inventory, destructive flags and cron setup: `!scripts/README.md`.
@@ -80,9 +80,11 @@ cd 11_timescaledb/
 ### Data Processing
 - `pipeline.yml` files in Connect services define ETL transformations
 - `65_connect_mqtt-to-kafka/pipeline.yml`: MQTT `#` → edge Kafka topic `factory1` (key = MQTT topic)
-- `55_connect_kafka-to-cloud/pipeline.yml`: edge `factory1` → global `factory1`
+- `55_connect_kafka-to-cloud/pipeline.yml`: edge `factory1` → global `factory1` (WAN hop: zstd, batches 500/1s; edge broker is the buffer, no local disk buffer)
 - `20_connect_factory1-to-global/pipeline.yml`: global `factory1` → global `global`
 - `10_connect_global-to-postgres/pipeline.yml`: global `global` → TimescaleDB (topic-id cache in Redis, numeric/text split, bad data → Kafka topic `dlq`)
+- Kafka in/out use the `redpanda` plugin (franz-go). Its output forwards **no headers by default**: every output sets `metadata.include_prefixes: [uns_]` (`10_` DLQ: `[dlq_, uns_]`). `10_` needs the `uns_timestamp_ms` header.
+- Topics are created by the one-shot `topic-init` service in `30_`/`60_` (1 partition, retention: `factory1`/`global` 7d, `dlq` 30d; re-applied on every start)
 
 ## Network Architecture
 The stack uses Docker networks to isolate communication:
@@ -90,6 +92,9 @@ The stack uses Docker networks to isolate communication:
 - `kafka-global`: Global Kafka messaging
 - `kafka-edge`: Edge Kafka messaging  
 - `mqtt`: MQTT broker and clients
+
+Edge and global share no docker network: `55_` is on `kafka-edge` only and reaches the global broker via
+its published port (`host.docker.internal:29092`, the "WAN"). Inside global, `10_`/`20_` use `redpanda-global:9092`.
 
 Not on the shared networks: `10_` has a private `global-to-postgres` bridge for its Redis sidecar;
 `91_telegraf` and `99_opcplc` have no `networks:` and reach the host via `host.docker.internal`.
@@ -123,6 +128,10 @@ Host ports as published in the `docker-compose.yml` files (see `INSECURITY.md` f
 Connect instances (`10_`, `20_`, `55_`, `65_`) only `expose` 4195 (health endpoint), not published.
 
 ## Intent & Design Goals
+### Architecture
+- In a production environment, 01-50 would run on a single linux device ("global") and 51-99 on a separate linux device ("edge").
+  For lab purposes, both are combined here in a single repo. But "global" and "edge" should communicate in a simple and clearly defined way. (e.g. no docker networks)
+
 ### Edge
 - one topic per tag
 - bare payloads are the standard. structured payloads are possible.

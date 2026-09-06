@@ -7,13 +7,11 @@ services:
       - "4195"
     command: -c /config/pipeline.yml
     environment:
-      KAFKA_BROKER: "host.docker.internal:29092"
+      KAFKA_BROKER: "redpanda-global:9092"
     volumes:
       - ./pipeline.yml:/config/pipeline.yml
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:4195/ready"]
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     networks:
       - kafka-global
 

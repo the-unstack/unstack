@@ -53,6 +53,25 @@ services:
     networks:
       - kafka-edge
 
+  # one-shot: create topics with fixed partitions + retention; alter-config also applies to existing topics
+  topic-init:
+    image: redpandadata/redpanda:latest
+    container_name: redpanda-topic-init-edge
+    restart: "no"
+    depends_on:
+      redpanda-edge:
+        condition: service_healthy
+    networks:
+      - kafka-edge
+    entrypoint: [ "/bin/sh", "-c" ]
+    command:
+      - |
+        for t in factory1:604800000; do    # topic:retention.ms
+          rpk topic describe $${t%%:*} -X brokers=redpanda-edge:9092 >/dev/null 2>&1 \
+            || rpk topic create $${t%%:*} -p 1 -c retention.ms=$${t##*:} -X brokers=redpanda-edge:9092
+          rpk topic alter-config $${t%%:*} --set retention.ms=$${t##*:} -X brokers=redpanda-edge:9092
+        done
+
 networks:
   kafka-edge:
     external: true

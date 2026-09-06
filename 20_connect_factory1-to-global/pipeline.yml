@@ -1,22 +1,13 @@
 input:
-  kafka:
-    addresses:
-      - ${KAFKA_BROKER}
-    topics:
-      - 'factory1'
-    consumer_group: 'factory1-to-global'
-
-#output:
-#  stdout: {}
+  redpanda:
+    seed_brokers: [ "${KAFKA_BROKER}" ]
+    topics: [ factory1 ]
+    consumer_group: factory1-to-global
 
 output:
-  kafka:
-    addresses:
-      - ${KAFKA_BROKER}
-    topic: 'global'
-    key: ${!metadata("kafka_key")}
-    #metadata:
-    #  include_prefixes:
-    #    - 'mqtt'
-    #    - 'kafka'
-    #    - 'uns'
+  redpanda:
+    seed_brokers: [ "${KAFKA_BROKER}" ]
+    topic: global
+    key: ${! metadata("kafka_key") }
+    metadata: { include_prefixes: [ uns_ ] }   # required: default forwards no headers
+    batching: { count: 200, period: 100ms }

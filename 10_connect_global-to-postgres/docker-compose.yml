@@ -12,7 +12,7 @@ services:
       DB_USER: ${POSTGRES_USER}
       DB_PASS: ${POSTGRES_PASSWORD}
       DB_DATABASE: ${POSTGRES_DB}
-      KAFKA_BROKER: redpanda-global:29092
+      KAFKA_BROKER: redpanda-global:9092
     volumes:
       - ./pipeline.yml:/config/pipeline.yml
     depends_on:
@@ -23,8 +23,6 @@ services:
       test: ["CMD", "wget", "-qO-", "http://localhost:4195/ready"]
       interval: 60s
       start_period: 20s
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     networks:
       - postgres
       - kafka-global

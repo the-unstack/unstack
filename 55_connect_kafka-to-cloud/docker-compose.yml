@@ -16,11 +16,8 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
-      - kafka-edge
-      - kafka-global
+      - kafka-edge   # edge only; global is reached via the published port ("WAN")
 
 networks:
   kafka-edge:
-    external: true
-  kafka-global:
     external: true

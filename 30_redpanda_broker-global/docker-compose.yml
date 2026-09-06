@@ -58,6 +58,25 @@ services:
       - kafka-global
       #- reverseproxy   # only enable when running with a separate reverse proxy
 
+  # one-shot: create topics with fixed partitions + retention; alter-config also applies to existing topics
+  topic-init:
+    image: redpandadata/redpanda:latest
+    container_name: redpanda-topic-init-global
+    restart: "no"
+    depends_on:
+      redpanda-global:
+        condition: service_healthy
+    networks:
+      - kafka-global
+    entrypoint: [ "/bin/sh", "-c" ]
+    command:
+      - |
+        for t in factory1:604800000 global:604800000 dlq:2592000000; do    # topic:retention.ms
+          rpk topic describe $${t%%:*} -X brokers=redpanda-global:9092 >/dev/null 2>&1 \
+            || rpk topic create $${t%%:*} -p 1 -c retention.ms=$${t##*:} -X brokers=redpanda-global:9092
+          rpk topic alter-config $${t%%:*} --set retention.ms=$${t##*:} -X brokers=redpanda-global:9092
+        done
+
 networks:
   kafka-global:
     external: true

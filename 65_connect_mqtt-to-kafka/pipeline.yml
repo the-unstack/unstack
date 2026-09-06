@@ -16,18 +16,10 @@ pipeline:
         meta uns_timestamp_ms = timestamp_unix_milli()
         meta uns_origin = "factory1"
 
-#output:
-#  stdout: {}
-
 output:
-  kafka:
-    addresses:
-      - ${KAFKA_BROKER_LOCAL}
+  redpanda:
+    seed_brokers: [ "${KAFKA_BROKER_LOCAL}" ]
     topic: factory1
-    key: ${!metadata("mqtt_topic")}
-
-    #metadata:
-    #  include_prefixes:
-    #    - 'mqtt'
-    #    - 'kafka'
-    #    - 'uns'
+    key: ${! metadata("mqtt_topic") }
+    metadata: { include_prefixes: [ uns_ ] }   # required: default forwards no headers
+    batching: { count: 200, period: 100ms }

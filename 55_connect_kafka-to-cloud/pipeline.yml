@@ -1,22 +1,16 @@
 input:
-  kafka:
-    addresses:
-      - ${KAFKA_BROKER_LOCAL}
-    topics:
-      - 'factory1'
-    consumer_group: "uplink"
+  redpanda:
+    seed_brokers: [ "${KAFKA_BROKER_LOCAL}" ]
+    topics: [ factory1 ]
+    consumer_group: uplink
+    # auto_replay_nacks: true (default) — failed WAN batch is replayed, offset not committed
 
-#output:
-#  stdout: {}
-
+# WAN hop: acks=all, bigger batches, zstd. No local buffer needed — the edge broker is the buffer.
 output:
-  kafka:
-    addresses:
-      - ${KAFKA_BROKER_UPSTREAM}
-    topic: 'factory1'
-    key: ${!metadata("kafka_key")}
-    #metadata:
-    #  include_prefixes:
-    #    - 'mqtt'
-    #    - 'kafka'
-    #    - 'uns'
+  redpanda:
+    seed_brokers: [ "${KAFKA_BROKER_UPSTREAM}" ]
+    topic: factory1
+    key: ${! metadata("kafka_key") }
+    metadata: { include_prefixes: [ uns_ ] }   # required: default forwards no headers
+    compression: zstd
+    batching: { count: 500, period: 1s }
