@@ -70,7 +70,7 @@ cd 11_timescaledb/
 ## Key Configuration Files
 
 ### Credentials
-- `.env` (repo root, gitignored): host settings (`STACK_DATA_DIR`, `CONTAINER_SOCKET`), DB passwords, Grafana admin credentials
+- `.env` (repo root, gitignored): host settings (`STACK_DATA_DIR`), DB passwords, Grafana admin credentials
 - Service directories that need it contain a `.env -> ../.env` symlink (compose interpolation)
 
 ### Service Control
@@ -82,7 +82,7 @@ cd 11_timescaledb/
 - `65_connect_mqtt-to-kafka/pipeline.yml`: MQTT `#` → edge Kafka topic `factory1` (key = MQTT topic)
 - `55_connect_kafka-to-cloud/pipeline.yml`: edge `factory1` → global `factory1`
 - `20_connect_factory1-to-global/pipeline.yml`: global `factory1` → global `global`
-- `10_connect_global-to-postgres/pipeline.yml`: global `global` → TimescaleDB (topic-id cache in Redis, numeric/text split)
+- `10_connect_global-to-postgres/pipeline.yml`: global `global` → TimescaleDB (topic-id cache in Redis, numeric/text split, bad data → Kafka topic `dlq`)
 
 ## Network Architecture
 The stack uses Docker networks to isolate communication:
@@ -91,7 +91,7 @@ The stack uses Docker networks to isolate communication:
 - `kafka-edge`: Edge Kafka messaging  
 - `mqtt`: MQTT broker and clients
 
-Not on the shared networks: `10_` has a private `global-to-postgres` bridge for its Redis/monitor sidecars;
+Not on the shared networks: `10_` has a private `global-to-postgres` bridge for its Redis sidecar;
 `91_telegraf` and `99_opcplc` have no `networks:` and reach the host via `host.docker.internal`.
 
 ## Data Storage

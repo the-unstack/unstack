@@ -1,138 +1,141 @@
 logger:
-  # OFF , FATAL , ERROR , WARN , INFO , DEBUG , TRACE , ALL , NONE
   level: INFO
-  #level: WARN
 
 input:
   kafka:
-    addresses:
-      - ${KAFKA_BROKER}
-    topics:
-      - 'global'
-    consumer_group: "postgres"
-    #auto_replay_nacks: false   # auto replay messages that were not acknowledged (default: true)
+    addresses: [ "${KAFKA_BROKER}" ]
+    topics: [ global ]
+    consumer_group: postgres
+    # auto_replay_nacks: true (default) — a nack means replay, intentional
 
 cache_resources:
   - label: redis
     redis:
       url: redis://redis:6379
+      default_ttl: 24h   # stale ids are also evicted on FK error, see output
 
 pipeline:
   processors:
-    - branch:
-        request_map:
-        processors:
-          - cached:
-              key: '${! metadata("kafka_key") }'
-              cache: redis
-              # Retry failed lookups instead of caching an unresolved topic ID.
-              skip_on: errored()
-              processors:
-                - sql_select:
-                    driver: "postgres"
-                    dsn: "postgres://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?sslmode=disable"
-                    table: topic
-                    columns: [ id ]
-                    where: topic = $1
-                    args_mapping: root = [ metadata("kafka_key") ]
-                - log:
-                    level: DEBUG
-                    message: SELECT topic_id done
-                - switch:
-                  - check: this.0.id == null
-                    processors:
-                      - sql_insert:
-                          driver: "postgres"
-                          dsn: "postgres://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?sslmode=disable"
-                          table: topic
-                          columns: [ topic, created_timestamp ]
-                          suffix: ON CONFLICT (topic) DO NOTHING
-                          args_mapping: |
-                                root = [
-                                  metadata("kafka_key"),
-                                  (metadata("uns_timestamp_ms").number() / 1000 ).ts_format("2006-01-02 15:04:05+00")
-                                ]
+    - try:
+        # typing + guards; any throw() → DLQ (no DB involved)
+        - mapping: |
+            if metadata("kafka_key").or("") == "" { root = throw("missing_key") }
+            let ms = metadata("uns_timestamp_ms").number().catch(-1)
+            if $ms < 0 { root = throw("missing_timestamp") }
+            meta ts = ($ms / 1000).ts_format("2006-01-02T15:04:05.000Z07:00", "UTC")
+            let v = this.catch(content().string())   # non-JSON → raw string
+            root = match {
+              content().string().trim() == ""               => throw("missing_value"),
+              $v.type() == "null"                           => throw("missing_value"),
+              $v.type() == "bool"                           => if $v { 1 } else { 0 },
+              $v.type() == "number"                         => $v,
+              $v.type() == "string"                         => $v,
+              $v.type() == "object" || $v.type() == "array" => $v.string(),
+              _                                             => throw("unsupported_type"),
+            }
+            meta datatype = if ["bool", "number"].contains($v.type()) { "numeric" } else { "text" }
 
-                      - log:
-                          level: DEBUG
-                          message: INSERT topic done
-                      - sql_select:
-                          driver: "postgres"
-                          dsn: "postgres://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?sslmode=disable"
-                          table: topic
-                          columns: [ id ]
-                          where: topic = $1
-                          args_mapping: root = [ metadata("kafka_key") ]
-                      - log:
-                          level: DEBUG
-                          message: SELECT topic_id done
-        result_map: meta topic_id = this.0.id
+        # topic_id lookup via redis cache → select → insert-if-missing → select
+        - branch:
+            processors:
+              - cached:
+                  key: '${! metadata("kafka_key") }'
+                  cache: redis
+                  skip_on: errored()   # never cache a failed lookup
+                  processors:
+                    - sql_select:
+                        driver: postgres
+                        dsn: "postgres://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?sslmode=disable"
+                        table: topic
+                        columns: [ id ]
+                        where: topic = $1
+                        args_mapping: root = [ metadata("kafka_key") ]
+                    - switch:
+                        - check: '!errored() && this.length() == 0'   # errored: select failed, skip
+                          processors:
+                            - sql_insert:
+                                driver: postgres
+                                dsn: "postgres://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?sslmode=disable"
+                                table: topic
+                                columns: [ topic, created_timestamp ]
+                                suffix: ON CONFLICT (topic) DO NOTHING
+                                args_mapping: root = [ metadata("kafka_key"), metadata("ts") ]
+                            - sql_select:
+                                driver: postgres
+                                dsn: "postgres://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?sslmode=disable"
+                                table: topic
+                                columns: [ id ]
+                                where: topic = $1
+                                args_mapping: root = [ metadata("kafka_key") ]
+            result_map: meta topic_id = this.index(0).id.not_null()
 
     - log:
         level: DEBUG
-        message: "after select topic_id"
+        message: "typed"
         fields_mapping: |
-          root.meta.topic_id = metadata("topic_id")
-
-    - bloblang: |
-        if this.catch("unstructured") == "unstructured" { meta datatype = "text"
-                                                          root = content().string() }
-        else {
-            if this.type() == "number" { meta datatype = "numeric" }
-            if this.type() == "string" { meta datatype = "text" }
-            if this.type() == "object" { meta datatype = "text"
-                                         root = this.string() }
-            if this.type() == "array"  { meta datatype = "text"
-                                         root = this.string() }
-        }
-
-    - log:
-        level: INFO
-        message: "output"
-        fields_mapping: |
-          root.meta.time = (metadata("uns_timestamp_ms").number() / 1000 ).ts_format("2006-01-02 15:04:05.999+00")
-          root.meta.topicid = metadata("topic_id")
-          root.meta.datatype = metadata("datatype")
-          root.meta.content = content().string()
-
-#output:
-#  stdout: {}
+          root.meta = {
+            "ts": metadata("ts"),
+            "topic_id": metadata("topic_id"),
+            "datatype": metadata("datatype"),
+            "error": error(),
+          }
 
 output:
   switch:
     cases:
-      - check: metadata("datatype") == "numeric"
+      # 1. data-shaped errors → DLQ
+      - check: errored() && error().re_match("missing_key|missing_timestamp|missing_value|unsupported_type")
         output:
-          sql_insert:
-            driver: "postgres"
-            dsn: "postgres://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?sslmode=disable"
-            batching:
-              count: 1000
-              period: 10s
-            suffix: ON CONFLICT (timestamp, topic_id) DO NOTHING
-            table: process_value_numeric
-            columns: [ timestamp, topic_id, value ]
-            args_mapping: |
-                root = [
-                  (metadata("uns_timestamp_ms").number() / 1000 ).ts_format("2006-01-02 15:04:05.999+00"),
-                  metadata("topic_id"),
-                  content()
-                ]
+          kafka:
+            addresses: [ "${KAFKA_BROKER}" ]
+            topic: dlq
+            key: '${! metadata("kafka_key") }'
+          processors:
+            - mapping: |
+                meta dlq_reason = error().re_replace_all("^.*: ", "")
+                meta dlq_source = "10_connect_global-to-postgres"
 
-      - check: metadata("datatype") == "text"
+      # 2. lookup failed for infra reasons (DB down) → nack → replay
+      - check: errored()
         output:
-          sql_insert:
-            driver: "postgres"
-            dsn: "postgres://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?sslmode=disable"
-            batching:
-              count: 1000
-              period: 10s
-            suffix: ON CONFLICT (timestamp, topic_id) DO NOTHING
-            table: process_value_text
-            columns: [ timestamp, topic_id, value ]
-            args_mapping: |
-                root = [
-                  (metadata("uns_timestamp_ms").number() / 1000 ).ts_format("2006-01-02 15:04:05.999+00"),
-                  metadata("topic_id"),
-                  content().string()
-                ]
+          reject: 'lookup failed, replaying: ${! error() }'
+          processors:
+            - log:
+                level: ERROR
+                message: 'topic lookup failed, replaying: ${! error() }'
+
+      # 3. clean → batched insert; on failure evict stale topic_id and replay
+      - output:
+          fallback:
+            - switch:
+                strict_mode: true
+                cases:
+                  - check: metadata("datatype") == "numeric"
+                    output:
+                      sql_insert:
+                        driver: postgres
+                        dsn: "postgres://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?sslmode=disable"
+                        table: process_value_numeric
+                        columns: [ timestamp, topic_id, value ]
+                        suffix: ON CONFLICT (timestamp, topic_id) DO NOTHING
+                        args_mapping: root = [ metadata("ts"), metadata("topic_id"), this ]
+                        batching: { count: 1000, period: 10s }
+                  - check: metadata("datatype") == "text"
+                    output:
+                      sql_insert:
+                        driver: postgres
+                        dsn: "postgres://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?sslmode=disable"
+                        table: process_value_text
+                        columns: [ timestamp, topic_id, value ]
+                        suffix: ON CONFLICT (timestamp, topic_id) DO NOTHING
+                        args_mapping: root = [ metadata("ts"), metadata("topic_id"), content().string() ]   # raw string is not JSON
+                        batching: { count: 1000, period: 10s }
+            - reject: 'db write failed, replaying: ${! metadata("fallback_error") }'
+              processors:
+                - switch:
+                    - check: metadata("fallback_error").contains("23503")   # FK: stale cached topic_id
+                      processors:
+                        - cache:
+                            resource: redis
+                            operator: delete
+                            key: '${! metadata("kafka_key") }'

@@ -4,12 +4,15 @@ input:
       - tcp://${MQTT_BROKER_LOCAL}
     client_id: "redpanda-connect-mqtt-to-kafka"
     connect_timeout: 30s
+    qos: 1                 # broker queues while we're down (mosquitto persistence)
+    clean_session: false   # ...and delivers the backlog on reconnect
     topics:
       - '#'
 
 pipeline:
   processors:
     - bloblang: |
+        root = if metadata("mqtt_topic").or("") == "" { deleted() }   # no key → no row, drop
         meta uns_timestamp_ms = timestamp_unix_milli()
         meta uns_origin = "factory1"
 
