@@ -25,7 +25,7 @@ services:
       - --mode dev-container
       - --default-log-level=info
     volumes:
-      - /srv/unstack-data/redpanda-broker-global:/var/lib/redpanda/data
+      - /srv/uns-data/redpanda-broker-global:/var/lib/redpanda/data
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:

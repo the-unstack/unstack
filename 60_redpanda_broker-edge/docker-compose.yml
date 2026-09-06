@@ -25,7 +25,7 @@ services:
       - --mode dev-container
       - --default-log-level=info
     volumes:
-      - /srv/unstack-data/redpanda-broker-edge:/var/lib/redpanda/data
+      - /srv/uns-data/redpanda-broker-edge:/var/lib/redpanda/data
     networks:
       - kafka-edge
     healthcheck:
