@@ -91,9 +91,8 @@ cd /srv
 git clone https://github.com/the-unstack/unstack.git
 cd unstack
 
-cp .env.example .env      # edit: passwords, STACK_DATA_DIR
+cp .env.example .env                # edit: passwords, STACK_DATA_DIR
 ./container_all_restart.sh
-sudo ./scripts/cron_install.sh    # optional: nightly pull + restart (01:30)
 ```
 - Access (replace `hostip`):
   - Grafana: http://hostip:3000
