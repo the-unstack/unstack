@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS public.topic (
     UNIQUE(topic)
 );
 
+-- Hypertable creation enables columnstore and creates its automatic policy.
 CREATE TABLE IF NOT EXISTS public.process_value_numeric (
     timestamp TIMESTAMPTZ NOT NULL,
     topic_id INTEGER NOT NULL REFERENCES topic(id),
@@ -28,16 +29,3 @@ CREATE TABLE IF NOT EXISTS public.process_value_text (
    tsdb.segmentby = 'topic_id',
    tsdb.orderby = 'timestamp DESC'
 );
-
-ALTER TABLE "process_value_numeric" SET(
-   timescaledb.enable_columnstore,
-   timescaledb.orderby = 'timestamp DESC',
-   timescaledb.segmentby = 'topic_id');
-
-ALTER TABLE "process_value_text" SET(
-   timescaledb.enable_columnstore,
-   timescaledb.orderby = 'timestamp DESC',
-   timescaledb.segmentby = 'topic_id');
-
-CALL add_columnstore_policy('process_value_numeric', INTERVAL '4 weeks');
-CALL add_columnstore_policy('process_value_text', INTERVAL '4 weeks');

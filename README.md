@@ -66,7 +66,7 @@ cp './!credentials/credentials.env.example' './!credentials/credentials.env'
 # Edit /!credentials/credentials.env to set your own passwords
 
 './!scripts/initialize.sh'
-./docker_all_restart.sh
+./container_all_restart.sh
 ```
 - Access Grafana: http://hostip:3000
 

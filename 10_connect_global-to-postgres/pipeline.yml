@@ -25,6 +25,8 @@ pipeline:
           - cached:
               key: '${! metadata("kafka_key") }'
               cache: redis
+              # Retry failed lookups instead of caching an unresolved topic ID.
+              skip_on: errored()
               processors:
                 - sql_select:
                     driver: "postgres"
@@ -134,4 +136,3 @@ output:
                   metadata("topic_id"),
                   content().string()
                 ]
-
