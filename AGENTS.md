@@ -85,7 +85,6 @@ cd 11_timescaledb/
 - `10_connect_global-to-postgres/pipeline.yml`: global `global` → TimescaleDB (topic-id cache in Redis, numeric/text split)
 
 ## Network Architecture
-
 The stack uses Docker networks to isolate communication:
 - `postgres`: TimescaleDB and related services
 - `kafka-global`: Global Kafka messaging
@@ -96,7 +95,6 @@ Not on the shared networks: `10_` has a private `global-to-postgres` bridge for 
 `91_telegraf` and `99_opcplc` have no `networks:` and reach the host via `host.docker.internal`.
 
 ## Data Storage
-
 All persistent data lives under `${STACK_DATA_DIR}` (default `/srv/uns-data`, set in `.env`).
 `!scripts/initialize.sh` creates the dirs with the container's uid (rootless Podman: via `podman unshare`):
 - `grafana` (1000), `nodered-global` / `nodered-edge` (1000)
@@ -104,7 +102,6 @@ All persistent data lives under `${STACK_DATA_DIR}` (default `/srv/uns-data`, se
 - `timescaledb/postgres` (70), `mosquitto/data` (1883)
 
 ## Service Access Points
-
 Host ports as published in the `docker-compose.yml` files (see `INSECURITY.md` for what is unauthenticated).
 
 | Service | Dir | Bind | Host port | Notes |
@@ -125,8 +122,14 @@ Host ports as published in the `docker-compose.yml` files (see `INSECURITY.md` f
 
 Connect instances (`10_`, `20_`, `55_`, `65_`) only `expose` 4195 (health endpoint), not published.
 
-## Development Guidelines
+## Intent & Design Goals
+### Edge
+- one topic per tag
+- bare payloads are the standard. structured payloads are possible.
+- The data is collected via mqtt. That is the main data interface for additional data sources.
+  OPCUA-Simulator and telegraf only exist in this stack for demo purposes.
 
+## Development Guidelines
 1. **Service Isolation**: Each service runs in its own numbered directory with standard scripts
 2. **Docker Networks**: Use appropriate networks for service communication isolation
 3. **Credentials**: Never commit actual passwords; `.env` is gitignored, keep `.env.example` current
