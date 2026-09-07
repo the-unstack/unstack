@@ -9,7 +9,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/the-unstack/unstack">
-    <img src="https://github.com/the-unstack/unstack-docs/blob/main/images/logo_3d.png" alt="Logo" width="120" height="120">
+    <img src="https://github.com/the-unstack/unstack-docs/blob/main/images/logo_3d.png" alt="Logo" width="180" height="180">
   </a>
 
   <h3 align="center">the UNStack</h3>
