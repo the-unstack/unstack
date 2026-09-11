@@ -25,6 +25,7 @@ the order resembles the hierarchy.
 - **60_redpanda_broker-edge**: Kafka broker for edge message streaming
 - **65_connect_mqtt-to-kafka**: Redpanda Connect ETL from MQTT to Kafka
 - **80_nodered_edge**: Node-RED for edge logic processing
+- **89_heartbeat**: publishes a retained epoch-seconds heartbeat to MQTT every 60 s (`uns/v1/company/site/watchdog/heartbeat`); shown as "Factory1 edge online" stat on the Grafana Home dashboard
 - **90_mosquitto_broker-edge**: MQTT broker for edge devices
 - **91_telegraf_opcua-to-mqtt**: OPC-UA to MQTT gateway using Telegraf
 - **99_opcplc_opcua-simulator**: OPC-UA simulator for testing
@@ -81,6 +82,7 @@ cd 11_timescaledb/
 ### Data Processing
 - `pipeline.yml` files in Connect services define ETL transformations
 - `65_connect_mqtt-to-kafka/pipeline.yml`: MQTT `#` → edge Kafka topic `factory1` (key = MQTT topic)
+- The `89_` heartbeat needs no pipeline change: `65_` subscribes `#`, the numeric payload lands in `process_value_numeric`
 - `55_connect_kafka-to-cloud/pipeline.yml`: edge `factory1` → global `factory1` (WAN hop: zstd, batches 500/1s; edge broker is the buffer, no local disk buffer)
 - `20_connect_factory1-to-global/pipeline.yml`: global `factory1` → global `global`
 - `10_connect_global-to-postgres/pipeline.yml`: global `global` → TimescaleDB (topic-id cache in Redis, numeric/text split, bad data → Kafka topic `dlq`)

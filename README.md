@@ -38,23 +38,24 @@ This is where the UNStack comes in!
 The numbering follows the automation pyramid: sort the folders and you get the hierarchy.
 
 ```
-                /\                  GLOBAL:
-               /  \                  05_grafana
-              /    \                 09_adminer
-             /      \                10_connect_global-to-postgres
-            /        \               11_timescaledb
-           /          \              19_nodered_global
-          /            \             20_connect_factory1-to-global
-         /______________\            30_redpanda_broker-global
-        __________________
-       /                  \         EDGE:
-      /                    \         55_connect_kafka-to-cloud
-     /                      \        60_redpanda_broker-edge
-    /                        \       65_connect_mqtt-to-kafka
-   /                          \      80_nodered_edge
-  /                            \     90_mosquitto_broker-edge
- /                              \    91_telegraf_opcua-to-mqtt
-/________________________________\   99_opcplc_opcua-simulator
+                 /\                  GLOBAL:
+                /  \                  05_grafana
+               /    \                 09_adminer
+              /      \                10_connect_global-to-postgres
+             /        \               11_timescaledb
+            /          \              19_nodered_global
+           /            \             20_connect_factory1-to-global
+          /______________\            30_redpanda_broker-global
+         __________________
+        /                  \         EDGE:
+       /                    \         55_connect_kafka-to-cloud
+      /                      \        60_redpanda_broker-edge
+     /                        \       65_connect_mqtt-to-kafka
+    /                          \      80_nodered_edge
+   /                            \     89_heartbeat
+  /                              \    90_mosquitto_broker-edge
+ /                                \   91_telegraf_opcua-to-mqtt
+/__________________________________\  99_opcplc_opcua-simulator
 ```
 
 ## Under the hood

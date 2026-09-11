@@ -1,0 +1,47 @@
+x-defaults: &defaults
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"        # Docker rotates; podman (k8s-file) ignores max-file and truncates at max-size
+
+x-healthcheck: &healthcheck
+  interval: 30s
+  timeout: 5s
+  retries: 3
+  start_period: 30s
+
+services:
+  heartbeat:
+    image: eclipse-mosquitto:latest        # already in the stack; brings mosquitto_pub
+    container_name: heartbeat
+    restart: unless-stopped
+    <<: *defaults
+    deploy:
+      resources:
+        limits:
+          memory: 32m
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD-SHELL", "test $$(( $$(date +%s) - $$(cat /tmp/last) )) -lt $$(( INTERVAL * 2 ))"]
+    environment:
+      MQTT_BROKER_LOCAL: "mosquitto:1883"
+      TOPIC: "uns/v1/company/site/watchdog/heartbeat"
+      INTERVAL: 60
+    # retained epoch-seconds heartbeat; bare number -> process_value_numeric via 65_/55_/20_/10_
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        while true; do
+          now=$$(date +%s)
+          mosquitto_pub -L "mqtt://$$MQTT_BROKER_LOCAL/$$TOPIC" -m "$$now" -r -q 1 -i heartbeat \
+            && echo "$$now" > /tmp/last && echo "sent $$now"
+          sleep "$$INTERVAL"
+        done
+    networks:
+      - mqtt
+
+networks:
+  mqtt:
+    external: true
