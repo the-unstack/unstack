@@ -3,7 +3,8 @@
 .diff-logs
 .temp
 .competition
-/.env
+/.env.global
+/.env.edge
 *.dump
 .issues/
 telegraf.example.conf

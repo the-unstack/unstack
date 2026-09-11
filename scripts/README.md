@@ -7,7 +7,7 @@ Every script starts with `source _lib.sh`, so they work from here, via the symli
 
 | File | Does |
 |------|------|
-| `_lib.sh` | sourced preamble, never run: `set -euo pipefail`, `ROOT_DIR` (repo root), `SCRIPT_DIR` (dir of the invoked script, symlink not resolved = service dir), `load_env` (sources `.env` or exit 1) |
+| `_lib.sh` | sourced preamble, never run: `set -euo pipefail`, `ROOT_DIR` (repo root), `SCRIPT_DIR` (dir of the invoked script, symlink not resolved = service dir), `load_env global\|edge` (sources `.env.global` / `.env.edge` or exit 1) |
 | `_for_each_service.sh` | shared loop: `[-r] [-f RE\|-x RE] <compose args>` in every `NN_*` dir that has `.autostart` (`-r` descending, `-f`/`-x` include/skip by regex). Keeps going on failure, exit 1 if any service failed. |
 
 ## Stack-wide

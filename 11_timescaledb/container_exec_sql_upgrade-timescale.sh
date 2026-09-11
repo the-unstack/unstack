@@ -1,7 +1,7 @@
 #!/bin/bash
 # shellcheck source=scripts/_lib.sh
 source "$(dirname "$0")/../scripts/_lib.sh"
-load_env
+load_env global
 
 # upgrade timescaledb
 # https://github.com/timescale/timescaledb/releases

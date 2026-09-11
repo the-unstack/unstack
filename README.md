@@ -90,7 +90,8 @@ cd /srv
 git clone https://github.com/the-unstack/unstack.git
 cd unstack
 
-cp .env.example .env                # edit: passwords, STACK_DATA_DIR
+cp .env.global.example .env.global  # edit: passwords, STACK_DATA_DIR
+cp .env.edge.example   .env.edge    # edit: STACK_DATA_DIR
 ./container_all_restart.sh
 ```
 - Access (replace `hostip`):

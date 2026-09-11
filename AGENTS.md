@@ -34,8 +34,9 @@ the order resembles the hierarchy.
 
 ### Initial Setup
 ```bash
-# Copy template and edit: passwords, STACK_DATA_DIR
-cp .env.example .env
+# Copy templates and edit: passwords, STACK_DATA_DIR
+cp .env.global.example .env.global
+cp .env.edge.example   .env.edge
 # Data dirs + docker networks are created by ./container_all_restart.sh (idempotent scripts/initialize.sh)
 ```
 
@@ -71,8 +72,9 @@ cd 11_timescaledb/
 ## Key Configuration Files
 
 ### Credentials
-- `.env` (repo root, gitignored): host settings (`STACK_DATA_DIR`), DB passwords, Grafana admin credentials
-- Service directories that need it contain a `.env -> ../.env` symlink (compose interpolation)
+- `.env.global` (repo root, gitignored): `STACK_DATA_DIR`, DB passwords, Grafana admin credentials
+- `.env.edge` (repo root, gitignored): `STACK_DATA_DIR` only
+- Service directories that need it contain a `.env -> ../.env.global` (01-50) or `.env -> ../.env.edge` (51-99) symlink (compose interpolation)
 
 ### Service Control
 - `.autostart` files in service directories control which services start with global commands
@@ -103,7 +105,7 @@ Not on the shared networks: `10_` has a private `global-to-postgres` bridge for 
 `91_telegraf` and `99_opcplc` have no `networks:` and reach the host via `host.docker.internal`.
 
 ## Data Storage
-All persistent data lives under `${STACK_DATA_DIR}` (default `/srv/uns-data`, set in `.env`).
+All persistent data lives under `${STACK_DATA_DIR}` (default `/srv/uns-data`, set in `.env.global` / `.env.edge`).
 `scripts/initialize.sh` creates the dirs with the container's uid (rootless Podman: via `podman unshare`):
 - `grafana` (1000), `nodered-global` / `nodered-edge` (1000)
 - `redpanda-broker-global` / `redpanda-broker-edge` (101)
@@ -114,7 +116,7 @@ Host ports as published in the `docker-compose.yml` files (see `INSECURITY.md` f
 
 | Service | Dir | Bind | Host port | Notes |
 |---------|-----|------|-----------|-------|
-| Grafana | `05_` | 0.0.0.0 | 3000 | admin credentials in `.env` |
+| Grafana | `05_` | 0.0.0.0 | 3000 | admin credentials in `.env.global` |
 | Adminer | `09_` | 0.0.0.0 | 3010 | |
 | TimescaleDB | `11_` | – | – | not published; `timescaledb:5432` on `postgres` net only |
 | Node-RED global | `19_` | 0.0.0.0 | 1881 | |
@@ -144,8 +146,8 @@ The Connect health endpoint (`10_`, `20_`, `55_`, `65_`, port 4195) is not publi
 ## Development Guidelines
 1. **Service Isolation**: Each service runs in its own numbered directory with standard scripts
 2. **Docker Networks**: Use appropriate networks for service communication isolation
-3. **Credentials**: Never commit actual passwords; `.env` is gitignored, keep `.env.example` current
+3. **Credentials**: Never commit actual passwords; `.env.global` / `.env.edge` are gitignored, keep the `.example` files current
 4. **Autostart Control**: Use `.autostart` files to control which services start automatically
 5. **Data Persistence**: All data should persist under `${STACK_DATA_DIR}` volumes
-6. **Scripts**: `source scripts/_lib.sh` (strict mode, `ROOT_DIR`, `SCRIPT_DIR`, `load_env`); shared scripts live in `scripts/` and are symlinked, never copied
+6. **Scripts**: `source scripts/_lib.sh` (strict mode, `ROOT_DIR`, `SCRIPT_DIR`, `load_env global|edge`); shared scripts live in `scripts/` and are symlinked, never copied
 7. **Compose style**: 2-space indent, map-style `environment:`, unquoted `host:container` ports, `restart: unless-stopped`, `:ro` on config mounts, no `expose:`; all files share the `x-defaults`/`x-healthcheck` anchors (log rotation, memory limit, healthcheck)
